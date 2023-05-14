@@ -833,6 +833,7 @@ CMakeFiles/FireflyLED.dir/FireflyLED.cc.o: \
  /usr/include/gz/msgs9/gz/msgs/details/world_control_state.pb.h \
  /usr/include/gz/msgs9/gz/msgs/world_modify.pb.h \
  /usr/include/gz/msgs9/gz/msgs/details/world_modify.pb.h \
+ /usr/include/gz/sim7/gz/sim/components/Light.hh \
  /usr/include/gz/sim7/gz/sim/components/ParentEntity.hh \
  /usr/include/gz/sim7/gz/sim/components/Link.hh \
  /usr/include/gz/sim7/gz/sim/components/Name.hh \
