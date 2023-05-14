@@ -11,6 +11,7 @@
 #include <gz/transport/Node.hh>
 #include <gz/transport/SubscribeOptions.hh>
 #include <gz/msgs/empty.pb.h>
+#include <gz/msgs/color.pb.h>
 // It's good practice to use a custom namespace for your project.
 namespace firefly_led
 {
@@ -43,15 +44,23 @@ namespace firefly_led
     virtual void PostUpdate(const gz::sim::UpdateInfo &_info,
                 const gz::sim::EntityComponentManager &_ecm) override;
 
-    void flash(const gz::msgs::Empty& _msg); // The LED shall flash once
+    // The LED will switch to on/off
+    void switchMode(const gz::msgs::Empty& _msg); 
+
+    // Change the Color as designated
+    void switchColor(const gz::msgs::Color& _msg);
+
 
     private: 
       Entity linkEntity;
       gz::transport::Node node; // Our plugin acts sort of like a ROS Subscriber Node
       gz::msgs::Empty flashCmd;
-      bool shouldFlash = false;
-      const std::string topicName = "/firefly_flash"; // TODO: Check to see if we need namespace
+      bool isOn = false;
+      const std::string modeTopic = "/LED_mode"; // TODO: Check to see if we need namespace
+      const std::string colorTopic = "/LED_color"; // TODO: Check to see if we need namespace
 
+      gz::math::Color ledColor {gz::math::Color::Green};
+      gz::math::Color OG_MAT_EMISSIVE;
   };
 }
 #endif

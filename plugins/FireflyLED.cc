@@ -29,15 +29,9 @@ using namespace firefly_led;
 void FireflyLED::PostUpdate(const gz::sim::UpdateInfo &_info,
     const gz::sim::EntityComponentManager & _ecm)
 {
-  if (shouldFlash) {
-    // Get Material tag: <material>...
-    auto material = _ecm.Component<components::Material>(this->linkEntity)->Data();
-    // Get Light tag: <light>...
-    auto light = _ecm.Component<components::Light>(this->linkEntity)->Data();
-
-    // TODO: Change mat and light
-  }
-  
+  // Get Material tag: <material>...
+  auto material = _ecm.Component<components::Material>(this->linkEntity)->Data();
+  material.SetEmissive(isOn ? ledColor : OG_MAT_EMISSIVE);
 }
 
 void FireflyLED::Configure(const Entity &_entity,
@@ -54,11 +48,21 @@ void FireflyLED::Configure(const Entity &_entity,
       components::ParentEntity(_entity),
       components::Name(linkName), components::Link());
 
-  this->node.Subscribe<FireflyLED, gz::msgs::Empty>(this->topicName, &FireflyLED::flash, 
+  // Get Material tag: <material>...
+  auto material = _ecm.Component<components::Material>(this->linkEntity)->Data();
+
+  this->OG_MAT_EMISSIVE = material.Emissive();
+
+  this->node.Subscribe<FireflyLED, gz::msgs::Empty>(this->modeTopic, &FireflyLED::switchMode, 
                                           this, gz::transport::SubscribeOptions());
 }
 
-void FireflyLED::flash(const gz::msgs::Empty& _msg)
+void FireflyLED::switchMode(const gz::msgs::Empty& _msg)
 {
-  shouldFlash = true; // We will flash on the next iteration
+  isOn = !isOn; // We will switchMode on the next iteration
+}
+
+void FireflyLED::switchColor(const gz::msgs::Color& _msg)
+{
+  this->ledColor.Set(_msg.r(), _msg.g(), _msg.b(), _msg.a());
 }
