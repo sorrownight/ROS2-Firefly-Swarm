@@ -3163,7 +3163,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "general;gz-plugin2::gz-plugin2;general;gz-sim7::gz-sim7;"
+			"value" : "general;gz-plugin2:gz-plugin2;general;gz-sim7::gz-sim7;general;gz-transport12::gz-transport12;general;gz-msgs9::gz-msgs9;"
 		},
 		{
 			"name" : "FireflyLED_SOURCE_DIR",
@@ -6992,6 +6992,18 @@
 			],
 			"type" : "PATH",
 			"value" : "/usr/lib/x86_64-linux-gnu/cmake/gz-math7"
+		},
+		{
+			"name" : "gz-msgs9-all_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "The directory containing a CMake configuration file for gz-msgs9-all."
+				}
+			],
+			"type" : "PATH",
+			"value" : "/usr/lib/x86_64-linux-gnu/cmake/gz-msgs9-all"
 		},
 		{
 			"name" : "gz-msgs9_DIR",

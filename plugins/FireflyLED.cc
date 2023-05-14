@@ -29,10 +29,14 @@ using namespace firefly_led;
 void FireflyLED::PostUpdate(const gz::sim::UpdateInfo &_info,
     const gz::sim::EntityComponentManager & _ecm)
 {
-  // Get Material tag: <material>...
-  auto material = _ecm.Component<components::Material>(this->linkEntity)->Data();
-  // Get Light tag: <light>...
-  auto light = _ecm.Component<components::Light>(this->linkEntity)->Data();
+  if (shouldFlash) {
+    // Get Material tag: <material>...
+    auto material = _ecm.Component<components::Material>(this->linkEntity)->Data();
+    // Get Light tag: <light>...
+    auto light = _ecm.Component<components::Light>(this->linkEntity)->Data();
+
+    // TODO: Change mat and light
+  }
   
 }
 
@@ -49,4 +53,12 @@ void FireflyLED::Configure(const Entity &_entity,
   this->linkEntity = _ecm.EntityByComponents(
       components::ParentEntity(_entity),
       components::Name(linkName), components::Link());
+
+  this->node.Subscribe<FireflyLED, gz::msgs::Empty>(this->topicName, &FireflyLED::flash, 
+                                          this, gz::transport::SubscribeOptions());
+}
+
+void FireflyLED::flash(const gz::msgs::Empty& _msg)
+{
+  shouldFlash = true; // We will flash on the next iteration
 }

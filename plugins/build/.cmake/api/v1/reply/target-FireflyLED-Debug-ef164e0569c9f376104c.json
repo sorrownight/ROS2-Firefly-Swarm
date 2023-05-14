@@ -25,13 +25,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 12,
+				"line" : 11,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 14,
+				"line" : 13,
 				"parent" : 0
 			}
 		]
@@ -96,7 +96,12 @@
 				{
 					"backtrace" : 2,
 					"isSystem" : true,
-					"path" : "/usr/include/gz/plugin2"
+					"path" : "/usr/include/gz/sim7"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/gz/math7"
 				},
 				{
 					"backtrace" : 2,
@@ -106,12 +111,7 @@
 				{
 					"backtrace" : 2,
 					"isSystem" : true,
-					"path" : "/usr/include/gz/sim7"
-				},
-				{
-					"backtrace" : 2,
-					"isSystem" : true,
-					"path" : "/usr/include/gz/math7"
+					"path" : "/usr/include/gz/plugin2"
 				},
 				{
 					"backtrace" : 2,
@@ -227,6 +227,11 @@
 			},
 			{
 				"backtrace" : 2,
+				"fragment" : "-lgz-plugin2:gz-plugin2",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libgz-sim7.so.7.4.0",
 				"role" : "libraries"
 			},
@@ -259,7 +264,6 @@
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 2,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libgz-plugin2.so.2.0.1",
 				"role" : "libraries"
 			},
@@ -308,19 +312,21 @@
 				"role" : "libraries"
 			},
 			{
+				"backtrace" : 2,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libgz-transport12.so.12.2.0",
 				"role" : "libraries"
 			},
 			{
-				"fragment" : "/usr/lib/x86_64-linux-gnu/libuuid.so",
-				"role" : "libraries"
-			},
-			{
-				"fragment" : "/usr/lib/x86_64-linux-gnu/libuuid.so",
-				"role" : "libraries"
-			},
-			{
+				"backtrace" : 2,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/libgz-msgs9.so.9.4.0",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libuuid.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libuuid.so",
 				"role" : "libraries"
 			},
 			{
