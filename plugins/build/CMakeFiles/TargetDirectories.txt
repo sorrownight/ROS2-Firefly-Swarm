@@ -1,3 +1,0 @@
-/home/remigor/hen_ichaer/src/firefly/plugins/build/CMakeFiles/FireflyLED.dir
-/home/remigor/hen_ichaer/src/firefly/plugins/build/CMakeFiles/edit_cache.dir
-/home/remigor/hen_ichaer/src/firefly/plugins/build/CMakeFiles/rebuild_cache.dir
