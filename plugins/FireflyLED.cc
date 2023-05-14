@@ -3,6 +3,7 @@
 #include <string>
 #include <gz/common/Console.hh>
 #include <gz/sim/components/Material.hh>
+#include <gz/sim/components/Visual.hh>
 #include <gz/sim/components/Light.hh>
 #include <gz/sim/components/ParentEntity.hh>
 #include <gz/sim/components/Link.hh>
@@ -29,8 +30,8 @@ using namespace firefly_led;
 void FireflyLED::PostUpdate(const gz::sim::UpdateInfo &_info,
     const gz::sim::EntityComponentManager & _ecm)
 {
-  // Get Material tag: <material>...
-  auto material = _ecm.Component<components::Material>(this->linkEntity)->Data();
+  // Get Material tag: <material>...  
+  auto material = _ecm.Component<components::Material>(this->visualEntity)->Data();
   material.SetEmissive(isOn ? ledColor : OG_MAT_EMISSIVE);
 }
 
@@ -44,12 +45,16 @@ void FireflyLED::Configure(const Entity &_entity,
 
   // Get link entity by querying for an entity that has a specific set of
   // components
-  this->linkEntity = _ecm.EntityByComponents(
+  auto linkEntity = _ecm.EntityByComponents(
       components::ParentEntity(_entity),
       components::Name(linkName), components::Link());
 
+  // Inside the link, we expect a visual tag
+  this->visualEntity = _ecm.EntityByComponents(
+      components::ParentEntity(linkEntity), components::Visual());
+
   // Get Material tag: <material>...
-  auto material = _ecm.Component<components::Material>(this->linkEntity)->Data();
+  auto material = _ecm.Component<components::Material>(this->visualEntity)->Data();
 
   this->OG_MAT_EMISSIVE = material.Emissive();
 

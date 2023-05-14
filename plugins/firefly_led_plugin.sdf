@@ -2,8 +2,8 @@
 <sdf version="1.6">
   <world name="default">
     <!--
-      System plugins can be loaded from <plugin> tags attached to entities like
-      the world, models, visuals, etc.
+      The plugin should be attached to a link that contains a visual tag
+      The visual component must include a material tag
     -->
     <plugin filename="FireflyLED" name="firefly_led::FireflyLED">
     </plugin>
