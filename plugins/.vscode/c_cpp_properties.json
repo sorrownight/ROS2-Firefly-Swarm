@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "${default}",
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "includePath": [
+                "/home/remigor/hen_ichaer/install/ros_gz_sim/include/**",
+                "/home/remigor/hen_ichaer/install/ros_gz_bridge/include/**",
+                "/home/remigor/hen_ichaer/install/ros_gz_interfaces/include/**",
+                "/opt/ros/humble/include/**",
+                "/home/remigor/hen_ichaer/src/firefly/include/**",
+                "/home/remigor/hen_ichaer/src/ros_gz/ros_gz_bridge/include/**",
+                "/home/remigor/hen_ichaer/src/ros_gz/ros_gz_sim/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "c++14",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}
