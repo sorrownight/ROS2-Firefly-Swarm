@@ -13,7 +13,7 @@ def generate_launch_description():
         # Launch gazebo (includes listener)
         ExecuteProcess(
             cmd=[
-                'gz', 'sim',
+                'gz', 'sim', 'r',
                 os.path.join(
                     pkg_firefly,
                     'worlds',
