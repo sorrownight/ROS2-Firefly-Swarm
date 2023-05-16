@@ -20,7 +20,8 @@
         <plugin
             filename="gz-sim-sensors-system"
             name="gz::sim::systems::Sensors">
-            <render_engine>ogre</render_engine>
+            <!-- VERY IMPORTANT: USE orge2 HERE!!!!! -->
+            <render_engine>ogre2</render_engine> 
         </plugin>
 
         <light type="directional" name="sun">
@@ -40,17 +41,39 @@
         <gui fullscreen="1">
             <plugin filename="ImageDisplay" name="Image Display">
                 <gz-gui>
-                <title>Wide angle camera</title>
+                <title>Select Camera View</title>
                 <property key="state" type="string">floating</property>
-                <property type="double" key="width">1000</property>
-                <property type="double" key="height">1000</property>
+                <property type="double" key="width">800</property>
+                <property type="double" key="height">800</property>
                 </gz-gui>
+                <topic>camera_world_view</topic>
                 <topic_picker>true</topic_picker>
+            </plugin>
+            <plugin filename="WorldControl" name="World control">
+                <gz-gui>
+                <title>World control</title>
+                <property type="bool" key="showTitleBar">false</property>
+                <property type="bool" key="resizable">false</property>
+                <property type="double" key="height">72</property>
+                <property type="double" key="width">121</property>
+                <property type="double" key="z">900</property>
+
+                <property type="string" key="state">floating</property>
+                <anchors target="3D View">
+                    <line own="left" target="left"/>
+                    <line own="bottom" target="bottom"/>
+                </anchors>
+                </gz-gui>
+
+                <play_pause>true</play_pause>
+                <step>true</step>
+                <start_paused>true</start_paused>
+
             </plugin>
         </gui>
 
         <model name="camera">
-            <pose>0 0 50 0 1.57 0</pose>
+            <pose>0 0 13 0 1.57 0</pose>
             <link name="link">
             <inertial>
                 <mass>0</mass>
@@ -262,11 +285,11 @@
                 <visual name="visual">
                 <geometry>
                     <box>
-                    <size>0.1 0.1 0.1</size>
+                    <size>0.01 0.01 0.01</size>
                     </box>
                 </geometry>
                 </visual>
-                <sensor name="wideangle_camera" type="wideanglecamera">
+                <sensor name="wide_angle_camera" type="wideanglecamera">
                 <camera>
                     <horizontal_fov>3.14</horizontal_fov>
                     <image>
@@ -473,10 +496,13 @@
             </plugin>
 
             <plugin name="FireflyLED" filename="libFireflyLED.so">
+                <model_name>turtlebot3_burger</model_name>
                 <link_name>base</link_name>
+                <visual_name>base_visual</visual_name>
             </plugin>
                 
-            <static>0</static>
+            <static>false</static>
+            <allow_auto_disable>false</allow_auto_disable>
         </model>
 
         <include>

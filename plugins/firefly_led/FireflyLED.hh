@@ -58,7 +58,7 @@ namespace firefly_led
       const std::string colorTopic = "/LED_color"; // TODO: Check to see if we need namespace
 
       gz::math::Color ledColor {gz::math::Color::Green};
-      gz::math::Color OG_MAT_EMISSIVE;
+      gz::math::Color OG_MAT_EMISSIVE {gz::math::Color::Blue};
 
       void FindScene();
       void PerformRenderingOperations();

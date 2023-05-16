@@ -53,7 +53,7 @@ void FireflyLED::Configure(const Entity &_entity,
   auto linkName = _sdf->Get<std::string>("link_name");
   this->visualName = _sdf->Get<std::string>("visual_name");
 
-  this->visualRenderName = modelName + "::" + linkName + "::" + visualName;
+  this->visualRenderName = modelName + "::" + linkName;
   // Get link entity by querying for an entity that has a specific set of
   // components
   linkEntity = _ecm.EntityByComponents(
@@ -75,8 +75,6 @@ void FireflyLED::Configure(const Entity &_entity,
 
   // Get Material tag: <material>...
   auto material = _ecm.Component<components::Material>(this->visualEntity)->Data();
-
-  this->OG_MAT_EMISSIVE = material.Emissive();
   
   this->connection = _eventMgr.Connect<gz::sim::events::PreRender>(
     std::bind(&FireflyLED::PerformRenderingOperations, this));
@@ -112,28 +110,27 @@ void FireflyLED::PerformRenderingOperations()
   if (nullptr == this->scene)
     gzdbg << "[LED]: Unable to locate Scene." << std::endl;
 
-  auto visual = this->scene->VisualByName(this->visualRenderName);
+  auto visual = this->scene->VisualByName(visualRenderName);
 
   if (visual == nullptr) {
-    gzdbg << "Can't find visual by Name: " << this->visualRenderName << std::endl;
+    gzdbg << "Can't find visual by Name: " << visual->Name() << std::endl;
     return;
   }
   gz::rendering::MaterialPtr material = visual->Material();
 
-  if (material == nullptr) {
-    gzdbg << "Can't find material. Creating a new one... " << std::endl;
-    
+  if (material != nullptr) {
+    material->SetEmissive(isOn ? ledColor : OG_MAT_EMISSIVE);
+    material->SetDiffuse(isOn ? ledColor : OG_MAT_EMISSIVE);
+  } else {
+    gzdbg << "Creating Material for Visual: " << visual->Name() << std::endl;
     common::Material tmpMat;
     tmpMat.SetEmissive(isOn ? ledColor : OG_MAT_EMISSIVE);
     tmpMat.SetDiffuse(isOn ? ledColor : OG_MAT_EMISSIVE);
 
-    material = scene->CreateMaterial(tmpMat);
-    scene->RegisterMaterial("tmp_mat", material);
-    visual->SetMaterial(material);
+    auto tmpMatPtr = scene->CreateMaterial(tmpMat);
+    scene->RegisterMaterial("tmp_mat", tmpMatPtr);
+    visual->SetMaterial(tmpMatPtr);
   }
-
-  material->SetEmissive(isOn ? ledColor : OG_MAT_EMISSIVE);
-  material->SetDiffuse(isOn ? ledColor : OG_MAT_EMISSIVE);  
 }
 
 void FireflyLED::FindScene()
