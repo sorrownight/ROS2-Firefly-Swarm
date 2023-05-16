@@ -13,7 +13,7 @@
 #include <gz/sim/rendering/Events.hh>
 #include <gz/math/Rand.hh>
 #include <gz/plugin/Register.hh>
-
+#include <gz/math/Rand.hh>
 #include "FireflyLED.hh"
 
 
@@ -111,7 +111,6 @@ void FireflyLED::PerformRenderingOperations()
     gzdbg << "[LED]: Unable to locate Scene." << std::endl;
 
   auto visual = this->scene->VisualByName(visualRenderName);
-
   if (visual == nullptr) {
     gzdbg << "Can't find visual by Name: " << visual->Name() << std::endl;
     return;
@@ -119,18 +118,18 @@ void FireflyLED::PerformRenderingOperations()
   gz::rendering::MaterialPtr material = visual->Material();
 
   if (material != nullptr) {
-    material->SetEmissive(isOn ? ledColor : OG_MAT_EMISSIVE);
-    material->SetDiffuse(isOn ? ledColor : OG_MAT_EMISSIVE);
-  } else {
-    gzdbg << "Creating Material for Visual: " << visual->Name() << std::endl;
-    common::Material tmpMat;
-    tmpMat.SetEmissive(isOn ? ledColor : OG_MAT_EMISSIVE);
-    tmpMat.SetDiffuse(isOn ? ledColor : OG_MAT_EMISSIVE);
-
-    auto tmpMatPtr = scene->CreateMaterial(tmpMat);
-    scene->RegisterMaterial("tmp_mat", tmpMatPtr);
-    visual->SetMaterial(tmpMatPtr);
+    this->scene->UnregisterMaterial("tmp_mat_led");
+    this->scene->DestroyMaterial(material);
   }
+  // ORGE 1.x wants explictly swapping of materials. Yikes.
+  common::Material tmpMat;
+  tmpMat.SetEmissive(isOn ? ledColor : OG_MAT_EMISSIVE);
+  tmpMat.SetDiffuse(isOn ? ledColor : OG_MAT_EMISSIVE);
+
+  auto tmpMatPtr = scene->CreateMaterial(tmpMat);
+  scene->RegisterMaterial("tmp_mat_led", tmpMatPtr);
+  visual->SetMaterial(tmpMatPtr);
+  
 }
 
 void FireflyLED::FindScene()
@@ -144,6 +143,9 @@ void FireflyLED::FindScene()
 
   // assume there is only one engine loaded
   auto engineName = loadedEngNames[0];
+  for (std::string name : loadedEngNames)  
+    gzdbg << "[LED] Engine: " << name << std::endl;
+    
   if (loadedEngNames.size() > 1)
   {
     gzdbg << "More than one engine is available. "
