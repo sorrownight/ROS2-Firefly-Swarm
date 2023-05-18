@@ -56,6 +56,7 @@ namespace firefly_led
       bool stateChanged = false;
       std::string modeTopic = "/LED_mode"; // TODO: Check to see if we need namespace
       std::string colorTopic = "/LED_color"; // TODO: Check to see if we need namespace
+      std::string matName = "tmp_mat_led"; // TODO: Check to see if we need namespace
 
       gz::math::Color ledColor {gz::math::Color::Green};
       gz::math::Color OG_MAT_EMISSIVE {gz::math::Color::Blue};

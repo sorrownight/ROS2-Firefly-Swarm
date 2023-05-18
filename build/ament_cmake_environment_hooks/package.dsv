@@ -1,0 +1,4 @@
+source;share/firefly/local_setup.bash
+source;share/firefly/local_setup.dsv
+source;share/firefly/local_setup.sh
+source;share/firefly/local_setup.zsh

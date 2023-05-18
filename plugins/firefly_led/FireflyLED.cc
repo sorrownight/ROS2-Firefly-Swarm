@@ -59,6 +59,7 @@ void FireflyLED::Configure(const Entity &_entity,
   auto modelName = _ecm.Component<components::Name>(_entity)->Data();
   auto linkName = _sdf->Get<std::string>("link_name");
   this->visualName = _sdf->Get<std::string>("visual_name");
+  this->matName = modelName + this->matName;
 
   this->visualRenderName = modelName + "::" + linkName;
 
@@ -129,7 +130,7 @@ void FireflyLED::PerformRenderingOperations()
   gz::rendering::MaterialPtr material = visual->Material();
 
   if (material != nullptr) {
-    this->scene->UnregisterMaterial("tmp_mat_led");
+    this->scene->UnregisterMaterial(matName);
     this->scene->DestroyMaterial(material);
   }
   // ORGE 1.x wants explictly swapping of materials. Yikes.
@@ -138,7 +139,7 @@ void FireflyLED::PerformRenderingOperations()
   tmpMat.SetDiffuse(isOn ? ledColor : OG_MAT_EMISSIVE);
 
   auto tmpMatPtr = scene->CreateMaterial(tmpMat);
-  scene->RegisterMaterial("tmp_mat_led", tmpMatPtr);
+  scene->RegisterMaterial(matName, tmpMatPtr);
   visual->SetMaterial(tmpMatPtr);
   
 }
