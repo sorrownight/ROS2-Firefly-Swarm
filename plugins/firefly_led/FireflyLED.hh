@@ -54,8 +54,8 @@ namespace firefly_led
       gz::msgs::Empty flashCmd;
       bool isOn = false;
       bool stateChanged = false;
-      const std::string modeTopic = "/LED_mode"; // TODO: Check to see if we need namespace
-      const std::string colorTopic = "/LED_color"; // TODO: Check to see if we need namespace
+      std::string modeTopic = "/LED_mode"; // TODO: Check to see if we need namespace
+      std::string colorTopic = "/LED_color"; // TODO: Check to see if we need namespace
 
       gz::math::Color ledColor {gz::math::Color::Green};
       gz::math::Color OG_MAT_EMISSIVE {gz::math::Color::Blue};

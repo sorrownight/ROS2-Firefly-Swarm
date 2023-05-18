@@ -13,7 +13,10 @@
 #include <gz/sim/rendering/Events.hh>
 #include <gz/math/Rand.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Util.hh>
+
 #include <gz/math/Rand.hh>
+#include "FireflyLED.hh"
 #include "FireflyLED.hh"
 
 
@@ -47,13 +50,18 @@ void FireflyLED::Configure(const Entity &_entity,
                          gz::sim::EntityComponentManager &_ecm,
                          EventManager& _eventMgr) 
 {
+  // configure topics based on absolute scoped name
+  modeTopic = gz::sim::scopedName(_entity, _ecm) + modeTopic;
+  colorTopic = gz::sim::scopedName(_entity, _ecm) + colorTopic;
+
   modelEntity = _entity;
   // Read property from SDF
-  auto modelName = _sdf->Get<std::string>("model_name");
+  auto modelName = _ecm.Component<components::Name>(_entity)->Data();
   auto linkName = _sdf->Get<std::string>("link_name");
   this->visualName = _sdf->Get<std::string>("visual_name");
 
   this->visualRenderName = modelName + "::" + linkName;
+
   // Get link entity by querying for an entity that has a specific set of
   // components
   linkEntity = _ecm.EntityByComponents(
@@ -84,6 +92,9 @@ void FireflyLED::Configure(const Entity &_entity,
 
   this->node.Subscribe<FireflyLED, gz::msgs::Color>(this->modeTopic, &FireflyLED::switchColor, 
                                           this, gz::transport::SubscribeOptions());
+  gzdbg<< "[LED]: Subscribed on: " << modeTopic << std::endl;
+  gzdbg<< "[LED]: Subscribed on: " << colorTopic << std::endl;
+
 }
 
 void FireflyLED::switchMode(const gz::msgs::Empty& _msg)
