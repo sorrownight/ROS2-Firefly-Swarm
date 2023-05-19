@@ -144,32 +144,32 @@
         </model>
 
         <include>
-            <uri>turtlefly</uri>      
+            <uri>model://turtlefly</uri>      
             <name>turtle1</name>
             <pose>0 2 0 0 0 0</pose>
         </include>
 
         <include>
-            <uri>turtlefly</uri>      
+            <uri>model://turtlefly</uri>      
             <name>turtle2</name>
             <pose>1 0 0 0 0 0</pose>
         </include>
 
         <include>
-            <uri>turtlefly</uri>      
+            <uri>model://turtlefly</uri>      
             <name>turtle3</name>
             <pose>3 -1 0 0 0 0</pose>
         </include>
 
 
         <include>
-            <uri>turtlefly</uri>      
+            <uri>model://turtlefly</uri>      
             <name>turtle4</name>
             <pose>-3 -3 0 0 0 0</pose>
         </include>
 
         <include>
-            <uri>turtlefly</uri>      
+            <uri>model://turtlefly</uri>      
             <name>turtle5</name>
             <pose>2 4 0 0 0 0</pose>
         </include>

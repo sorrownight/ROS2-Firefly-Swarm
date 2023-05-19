@@ -26,6 +26,7 @@ def generate_launch_description():
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
+            
             arguments=[
                 '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist'
             ],
