@@ -1,4 +1,6 @@
 import os
+import sys, signal, subprocess, time
+
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -13,13 +15,14 @@ def generate_launch_description():
         # Launch gazebo (includes listener)
         ExecuteProcess(
             cmd=[
-                'gz', 'sim', '-r', '-v 4',
+                'gz', 'sim', '-r',
                 os.path.join(
                     pkg_firefly,
                     'worlds',
                     'swarm_world.sdf'
                 )
-            ]
+            ],
+            shell=True
         ),
         # Launch a bridge to forward ROS2's Twist msg to Gazebo's Twist under /cmd_vel topic
         # We have to do this for Gazebo Garden
@@ -28,7 +31,8 @@ def generate_launch_description():
             executable='parameter_bridge',
             
             arguments=[
-                '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist'
+                '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/world/swarm_world/model/turtle5/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image'
             ],
         ),
         # Launch firefly publisher

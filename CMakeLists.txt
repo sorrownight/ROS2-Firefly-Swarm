@@ -10,6 +10,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(cv_bridge REQUIRED)
 
 add_executable(firefly src/firefly.cpp)
 target_include_directories(firefly PUBLIC
@@ -21,6 +24,9 @@ ament_target_dependencies(
   "rclcpp"
   "std_msgs"
   "geometry_msgs"
+  "sensor_msgs"
+  OpenCV
+  cv_bridge
 )
 
 install(TARGETS firefly
@@ -37,7 +43,6 @@ install(DIRECTORY
   worlds
   DESTINATION share/${PROJECT_NAME}/
 )
-
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
