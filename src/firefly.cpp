@@ -4,6 +4,8 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <chrono>
+
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/qos.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -18,6 +20,7 @@
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
+static const auto CAMERA_REFRESH_INTERVAL = 500ms;
 
 // Note: count_ is needed for the shared pointer (probably?)
 class FireFly : public rclcpp::Node
@@ -26,11 +29,17 @@ class FireFly : public rclcpp::Node
     FireFly()
     : Node("firefly"), count_(0)
     {
-      publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+      this->declare_parameter("model_name", "turtle1");
+      this->model_name = "/" + this->get_parameter("model_name").as_string();
+
+      publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/model" + this->model_name  + "/cmd_vel", 10);
       timer_ = this->create_wall_timer(
         500ms, std::bind(&FireFly::timer_callback, this));
 
-      topic = "/world/swarm_world/model/turtle1/link/camera_link/sensor/wide_angle_camera/image";
+      topic = "/world/swarm_world/model";
+      topic += this->model_name;
+      topic += "/link/camera_link/sensor/wide_angle_camera/image";
+
       subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
       topic, rclcpp::SensorDataQoS(), std::bind(&FireFly::topic_callback, this, _1));
     }
@@ -39,21 +48,23 @@ class FireFly : public rclcpp::Node
       void timer_callback()
       {
         auto message = geometry_msgs::msg::Twist();
-        
-        message.linear.x = (double(rand()))/double(RAND_MAX);
+        std::string cmd_vel_top = "/model" + this->model_name  + "/cmd_vel";
+        message.linear.x = (double(rand()))/double(RAND_MAX) * 2;
         message.linear.y = (double(rand()))/double(RAND_MAX);
-        message.angular.z = (2*double(rand()))/double(RAND_MAX) - 1;
+        //message.angular.z = (3*double(rand()))/double(RAND_MAX) - 1;
 
-        RCLCPP_INFO(this->get_logger(), "Linear: <%lf,%lf,%lf> | Angular: <%lf,%lf,%lf>", 
+        RCLCPP_INFO(this->get_logger(), "Linear: <%lf,%lf,%lf> | Angular: <%lf,%lf,%lf> to [%s]", 
                       message.linear.x, message.linear.y, message.linear.z, 
-                      message.angular.x, message.angular.y, message.angular.z);
+                      message.angular.x, message.angular.y, message.angular.z, cmd_vel_top.c_str());
           
         publisher_->publish(message);
       }
       
-      void topic_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg) const
+      void topic_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
       {
-          RCLCPP_INFO(this->get_logger(), "Image Received");
+        auto current = std::chrono::steady_clock::now();
+        if (current - this->last_processed_img > CAMERA_REFRESH_INTERVAL) {
+          // RCLCPP_INFO(this->get_logger(), "Image Received");
           cv_bridge::CvImagePtr cv_ptr;
           try
           {
@@ -71,6 +82,8 @@ class FireFly : public rclcpp::Node
           cv::resize(cv_ptr->image, resizedImg, cv::Size(msg->width, msg->height), cv::INTER_LINEAR);
 
           this->extract_green(resizedImg);
+          last_processed_img = std::chrono::steady_clock::now();
+        }
       }
 
       void extract_green(const cv::Mat& img) const
@@ -102,7 +115,7 @@ class FireFly : public rclcpp::Node
         cv::Mat res;
         cv::bitwise_and(img, img, res, mask);
 
-        cv::imshow("Image", res);
+        cv::imshow(this->model_name, res);
         cv::waitKey(10);
       }
 
@@ -110,13 +123,14 @@ class FireFly : public rclcpp::Node
       rclcpp::TimerBase::SharedPtr timer_;
       rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
       rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
+      std::string model_name;
       size_t count_;
+      std::chrono::steady_clock::time_point last_processed_img;
 };
 
 
 int main(int argc, char ** argv)
 {
-  cv::namedWindow("Image");
   cv::startWindowThread();
 
   std::srand(std::time(nullptr));
@@ -124,6 +138,5 @@ int main(int argc, char ** argv)
   rclcpp::spin(std::make_shared<FireFly>());
   rclcpp::shutdown();
   
-  cv::destroyWindow("Image");
   return 0;
 }

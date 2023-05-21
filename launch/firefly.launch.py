@@ -31,13 +31,52 @@ def generate_launch_description():
             executable='parameter_bridge',
             
             arguments=[
-                '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/world/swarm_world/model/turtle1/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image'
+                '/model/turtle1/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle2/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle3/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle4/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle5/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/world/swarm_world/model/turtle1/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle2/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle3/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle4/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle5/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image',
             ],
         ),
-        # Launch firefly publisher
+        # Launch firefly nodes
         Node(
             package='firefly',
             executable='firefly',
+            parameters=[
+                {"model_name": "turtle1"}
+            ]
+        ),
+        Node(
+            package='firefly',
+            executable='firefly',
+            parameters=[
+                {"model_name": "turtle2"}
+            ]
+        ),
+        Node(
+            package='firefly',
+            executable='firefly',
+            parameters=[
+                {"model_name": "turtle3"}
+            ]
+        ),
+        Node(
+            package='firefly',
+            executable='firefly',
+            parameters=[
+                {"model_name": "turtle4"}
+            ]
+        ),
+        Node(
+            package='firefly',
+            executable='firefly',
+            parameters=[
+                {"model_name": "turtle5"}
+            ]
         )
     ])
