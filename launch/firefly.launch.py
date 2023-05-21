@@ -32,7 +32,7 @@ def generate_launch_description():
             
             arguments=[
                 '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/world/swarm_world/model/turtle5/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image'
+                '/world/swarm_world/model/turtle1/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image'
             ],
         ),
         # Launch firefly publisher
