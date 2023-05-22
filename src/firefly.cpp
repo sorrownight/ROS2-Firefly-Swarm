@@ -51,20 +51,18 @@ class FireFly : public rclcpp::Node
         std::string cmd_vel_top = "/model" + this->model_name  + "/cmd_vel";
         message.linear.x = (double(rand()))/double(RAND_MAX) * 2;
         message.linear.y = (double(rand()))/double(RAND_MAX);
-        //message.angular.z = (3*double(rand()))/double(RAND_MAX) - 1;
+        message.angular.x = (double(rand()))/double(RAND_MAX) * 3 - 1;
 
-        RCLCPP_INFO(this->get_logger(), "Linear: <%lf,%lf,%lf> | Angular: <%lf,%lf,%lf> to [%s]", 
+        /* RCLCPP_INFO(this->get_logger(), "Linear: <%lf,%lf,%lf> | Angular: <%lf,%lf,%lf> to [%s]", 
                       message.linear.x, message.linear.y, message.linear.z, 
-                      message.angular.x, message.angular.y, message.angular.z, cmd_vel_top.c_str());
+                      message.angular.x, message.angular.y, message.angular.z, cmd_vel_top.c_str()); */
           
         publisher_->publish(message);
       }
       
       void topic_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
       {
-        auto current = std::chrono::steady_clock::now();
-        if (current - this->last_processed_img > CAMERA_REFRESH_INTERVAL) {
-          // RCLCPP_INFO(this->get_logger(), "Image Received");
+        // RCLCPP_INFO(this->get_logger(), "Image Received");
           cv_bridge::CvImagePtr cv_ptr;
           try
           {
@@ -82,8 +80,6 @@ class FireFly : public rclcpp::Node
           cv::resize(cv_ptr->image, resizedImg, cv::Size(msg->width, msg->height), cv::INTER_LINEAR);
 
           this->extract_green(resizedImg);
-          last_processed_img = std::chrono::steady_clock::now();
-        }
       }
 
       void extract_green(const cv::Mat& img) const
@@ -112,10 +108,16 @@ class FireFly : public rclcpp::Node
         cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, Kernel);
         cv::morphologyEx(mask, mask, cv::MORPH_OPEN, Kernel);
 
-        cv::Mat res;
-        cv::bitwise_and(img, img, res, mask);
+        cv::Mat merged;
+        cv::bitwise_and(img, img, merged, mask);
+        cv::Mat grayscaled;
+        cv::cvtColor(merged, grayscaled, cv::COLOR_BGR2GRAY);
+        int count = cv::countNonZero(grayscaled);
+        if (count > 0) {
+          RCLCPP_INFO(this->get_logger(), "Robot %s detected flashing with %d pixels", model_name.c_str(), count);
+        }
 
-        cv::imshow(this->model_name, res);
+        // cv::imshow(this->model_name, grayscaled);
         cv::waitKey(10);
       }
 
@@ -125,7 +127,6 @@ class FireFly : public rclcpp::Node
       rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
       std::string model_name;
       size_t count_;
-      std::chrono::steady_clock::time_point last_processed_img;
 };
 
 
