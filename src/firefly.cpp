@@ -57,7 +57,7 @@ class FireFly : public rclcpp::Node
                       message.linear.x, message.linear.y, message.linear.z, 
                       message.angular.x, message.angular.y, message.angular.z, cmd_vel_top.c_str()); */
           
-        publisher_->publish(message);
+        // publisher_->publish(message);
       }
       
       void topic_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
@@ -110,14 +110,18 @@ class FireFly : public rclcpp::Node
 
         cv::Mat merged;
         cv::bitwise_and(img, img, merged, mask);
+
+        // Convert to binary (Just black or white)
         cv::Mat grayscaled;
         cv::cvtColor(merged, grayscaled, cv::COLOR_BGR2GRAY);
-        int count = cv::countNonZero(grayscaled);
-        if (count > 0) {
-          RCLCPP_INFO(this->get_logger(), "Robot %s detected flashing with %d pixels", model_name.c_str(), count);
+        cv::Mat thresh;
+        cv::threshold(grayscaled, thresh, 2, 255, cv::THRESH_BINARY);
+        int pix_count = cv::countNonZero(grayscaled);
+        if (pix_count > 0) {
+          RCLCPP_INFO(this->get_logger(), "Robot %s detected flashing with %d pixels", model_name.c_str(), pix_count);        
         }
 
-        // cv::imshow(this->model_name, grayscaled);
+        cv::imshow(this->model_name, thresh);
         cv::waitKey(10);
       }
 
