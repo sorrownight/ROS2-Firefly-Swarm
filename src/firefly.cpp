@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <chrono>
+#include <vector>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/qos.hpp"
@@ -29,6 +30,7 @@ class FireFly : public rclcpp::Node
     FireFly()
     : Node("firefly"), count_(0)
     {
+      this->previous_flashes_seen = 0;
       this->declare_parameter("model_name", "turtle1");
       this->model_name = "/" + this->get_parameter("model_name").as_string();
 
@@ -82,7 +84,7 @@ class FireFly : public rclcpp::Node
           this->extract_green(resizedImg);
       }
 
-      void extract_green(const cv::Mat& img) const
+      void extract_green(const cv::Mat& img)
       {
         // Credit: 
         // https://techvidvan.com/tutorials/detect-objects-of-similar-color-using-opencv-in-python/
@@ -118,8 +120,17 @@ class FireFly : public rclcpp::Node
         cv::threshold(grayscaled, thresh, 2, 255, cv::THRESH_BINARY);
         int pix_count = cv::countNonZero(grayscaled);
         if (pix_count > 0) {
-          RCLCPP_INFO(this->get_logger(), "Robot %s detected flashing with %d pixels", model_name.c_str(), pix_count);        
-        }
+          // Reference: https://stackoverflow.com/questions/44749735/count-red-color-object-from-video-opencv-python
+          std::vector<std::vector<cv::Point> > contours;
+          std::vector<cv::Vec4i> hierarchy;
+
+          cv::findContours(thresh, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+          if (contours.size() > previous_flashes_seen) {
+            RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", model_name.c_str(), contours.size(), previous_flashes_seen);
+            previous_flashes_seen = contours.size();
+          }
+        } 
+        else previous_flashes_seen = 0;
 
         cv::imshow(this->model_name, thresh);
         cv::waitKey(10);
@@ -130,6 +141,7 @@ class FireFly : public rclcpp::Node
       rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
       rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
       std::string model_name;
+      int previous_flashes_seen;
       size_t count_;
 };
 
