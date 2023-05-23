@@ -41,6 +41,11 @@ def generate_launch_description():
                 '/world/swarm_world/model/turtle3/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image',
                 '/world/swarm_world/model/turtle4/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image',
                 '/world/swarm_world/model/turtle5/link/camera_link/sensor/wide_angle_camera/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/model/turtle1/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle2/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle3/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle4/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle5/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
             ],
         ),
         # Launch firefly nodes

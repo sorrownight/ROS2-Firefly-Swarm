@@ -6,10 +6,13 @@
 #include <string>
 #include <chrono>
 #include <vector>
+#include <thread>
+#include <mutex>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/qos.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "std_msgs/msg/empty.hpp"
 #include <geometry_msgs/msg/twist.hpp>
 #include "sensor_msgs/msg/image.hpp"
 
@@ -21,7 +24,10 @@
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
-static const auto CAMERA_REFRESH_INTERVAL = 500ms;
+static const int ACTIVATION_THRESHOLD = 1500;
+static const int ACTIVATION_EPSILON = 100;
+static const int ACTIVATION_TIME_INCR = 10;
+static const auto FLASH_DURATION = 1s;
 
 // Note: count_ is needed for the shared pointer (probably?)
 class FireFly : public rclcpp::Node
@@ -33,21 +39,57 @@ class FireFly : public rclcpp::Node
       this->previous_flashes_seen = 0;
       this->declare_parameter("model_name", "turtle1");
       this->model_name = "/" + this->get_parameter("model_name").as_string();
+      std::srand(std::time(nullptr) + model_name[model_name.size()-1]);
 
-      publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/model" + this->model_name  + "/cmd_vel", 10);
-      timer_ = this->create_wall_timer(
-        500ms, std::bind(&FireFly::timer_callback, this));
+      this->geometry_pub = this->create_publisher<geometry_msgs::msg::Twist>("/model" + this->model_name  + "/cmd_vel", 10);
+      this->publisher_timer = this->create_wall_timer(
+        500ms, std::bind(&FireFly::publish_callback, this));
 
-      topic = "/world/swarm_world/model";
-      topic += this->model_name;
-      topic += "/link/camera_link/sensor/wide_angle_camera/image";
+      this->activation = (double(rand()))/double(RAND_MAX) * 1000; // this denotes the initial activation - which every firefly should differ in
+
+      RCLCPP_INFO(this->get_logger(), "Robot %s starts with initial activation: %d", model_name.c_str(), this->activation);
+
+      this->activation_timer = this->create_wall_timer(
+        100ms, std::bind(&FireFly::activation_buildup, this)); // 10 buildups/s
+
+      this->camera_topic = "/world/swarm_world/model";
+      this->camera_topic += this->model_name;
+      this->camera_topic += "/link/camera_link/sensor/wide_angle_camera/image";
 
       subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
-      topic, rclcpp::SensorDataQoS(), std::bind(&FireFly::topic_callback, this, _1));
+      this->camera_topic, rclcpp::SensorDataQoS(), std::bind(&FireFly::topic_callback, this, _1));
+
+      this->flash_pub = this->create_publisher<std_msgs::msg::Empty>("/model" + this->model_name + "/LED_mode", 10);
     }
 
     private:
-      void timer_callback()
+      void activation_buildup()
+      {
+        // This is a simplication of the discrete function presented in the IEEE paper
+        // We interpreted the control cycles as the frequency at which the activation will build up
+        // For our purpose, we assume, as was interpreted by the paper's results, that 
+        // the rate at which the activation builds up (h(x_i)) is the same across all fireflies
+        // We further question this constraint, however. Perhaps it can be removed. Further testing is required.
+        // With the initial activation being 0, a firefly shall flash after exactly 15s
+        const std::lock_guard<std::mutex> lock(this->activation_lock);
+        this->activation += ACTIVATION_TIME_INCR; // 1s == 100 => 15s == 1500
+
+        if (activation > ACTIVATION_THRESHOLD) {
+          // Only one flash should occur at any given time!
+          std::thread(&FireFly::flash, this).detach();
+          activation = 0;
+        }
+      }
+      void flash()
+      {
+        const std::lock_guard<std::mutex> lock(this->flash_lock);
+        RCLCPP_INFO(this->get_logger(), "Lo! Robot %s is flashing!", model_name.c_str());
+        this->flash_pub->publish(std_msgs::msg::Empty()); // LED ON
+        std::this_thread::sleep_for(FLASH_DURATION);
+        this->flash_pub->publish(std_msgs::msg::Empty()); // LED OFF
+      }
+
+      void publish_callback()
       {
         auto message = geometry_msgs::msg::Twist();
         std::string cmd_vel_top = "/model" + this->model_name  + "/cmd_vel";
@@ -59,7 +101,7 @@ class FireFly : public rclcpp::Node
                       message.linear.x, message.linear.y, message.linear.z, 
                       message.angular.x, message.angular.y, message.angular.z, cmd_vel_top.c_str()); */
           
-        // publisher_->publish(message);
+        // geometry_pub->publish(message);
       }
       
       void topic_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
@@ -125,23 +167,33 @@ class FireFly : public rclcpp::Node
           std::vector<cv::Vec4i> hierarchy;
 
           cv::findContours(thresh, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-          if (contours.size() > previous_flashes_seen) {
-            RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", model_name.c_str(), contours.size(), previous_flashes_seen);
-            previous_flashes_seen = contours.size();
+          if (contours.size() > this->previous_flashes_seen) {
+            RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", 
+                                        model_name.c_str(), contours.size(), this->previous_flashes_seen);
+
+            const std::lock_guard<std::mutex> lock(this->activation_lock);            
+            this->activation += ACTIVATION_EPSILON;
+
+            this->previous_flashes_seen = contours.size();
           }
         } 
-        else previous_flashes_seen = 0;
+        else this->previous_flashes_seen = 0;
 
         cv::imshow(this->model_name, thresh);
         cv::waitKey(10);
       }
 
-      std::string topic;
-      rclcpp::TimerBase::SharedPtr timer_;
-      rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
+      std::string camera_topic;
+      rclcpp::TimerBase::SharedPtr publisher_timer;
+      rclcpp::TimerBase::SharedPtr activation_timer;
+      rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr geometry_pub;
+      rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr flash_pub;
       rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
       std::string model_name;
-      int previous_flashes_seen;
+      unsigned int previous_flashes_seen;
+      int activation;
+      std::mutex activation_lock;
+      std::mutex flash_lock;
       size_t count_;
 };
 
@@ -150,7 +202,6 @@ int main(int argc, char ** argv)
 {
   cv::startWindowThread();
 
-  std::srand(std::time(nullptr));
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<FireFly>());
   rclcpp::shutdown();
