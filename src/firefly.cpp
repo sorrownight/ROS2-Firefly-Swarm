@@ -95,7 +95,7 @@ class FireFly : public rclcpp::Node
         std::string cmd_vel_top = "/model" + this->model_name  + "/cmd_vel";
         message.linear.x = (double(rand()))/double(RAND_MAX) * 2;
         message.linear.y = (double(rand()))/double(RAND_MAX);
-        message.angular.x = (double(rand()))/double(RAND_MAX) * 3 - 1;
+        message.angular.z = (double(rand()))/double(RAND_MAX) * 3 - 1;
 
         /* RCLCPP_INFO(this->get_logger(), "Linear: <%lf,%lf,%lf> | Angular: <%lf,%lf,%lf> to [%s]", 
                       message.linear.x, message.linear.y, message.linear.z, 
