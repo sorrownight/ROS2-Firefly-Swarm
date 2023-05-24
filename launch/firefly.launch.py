@@ -61,17 +61,17 @@ def generate_launch_description():
                 '/world/swarm_world/model/turtle8/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
                 '/world/swarm_world/model/turtle9/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
                 '/world/swarm_world/model/turtle10/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/model/turtle11/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle12/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle13/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle14/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle15/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle16/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle17/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle18/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle19/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle20/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                """ '/model/turtle11/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle1/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle2/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle3/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle4/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle5/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle6/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle7/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle8/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle9/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle10/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle11/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
                 '/model/turtle12/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
                 '/model/turtle13/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
                 '/model/turtle14/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
@@ -110,7 +110,7 @@ def generate_launch_description():
                 '/model/turtle17/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle18/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle19/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle20/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty', """
+                '/model/turtle20/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
             ],
         ),
         # Launch firefly nodes
@@ -184,7 +184,7 @@ def generate_launch_description():
                 {"model_name": "turtle10"}
             ]
         ),
-        """ Node(
+        Node(
             package='firefly',
             executable='firefly',
             parameters=[
@@ -253,5 +253,5 @@ def generate_launch_description():
             parameters=[
                 {"model_name": "turtle20"}
             ]
-        ), """
+        ),
     ])

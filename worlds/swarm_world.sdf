@@ -205,7 +205,7 @@
             <pose>-2 4 0 0 0 1</pose>
         </include>
 
-       <!--  <include>
+        <include>
             <uri>model://turtlefly</uri>      
             <name>turtle11</name>
             <pose>0.5 2.5 0 0 0 0</pose>
@@ -265,7 +265,7 @@
             <uri>model://turtlefly</uri>      
             <name>turtle20</name>
             <pose>-2.5 4.5 0 0 0 1</pose>
-        </include> -->
+        </include>
 
         <include>
             <pose>5 1 0 0.0 0.0 1.57</pose>
