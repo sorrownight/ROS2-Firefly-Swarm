@@ -71,16 +71,16 @@ def generate_launch_description():
                 '/model/turtle18/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle19/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle20/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle1/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle2/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle3/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle4/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle5/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle6/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle7/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle8/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle9/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle10/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                """ '/model/turtle11/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle12/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle13/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle14/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle15/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle16/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle17/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle18/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle19/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle20/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
                 '/world/swarm_world/model/turtle11/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
                 '/world/swarm_world/model/turtle12/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
                 '/world/swarm_world/model/turtle13/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
@@ -110,7 +110,7 @@ def generate_launch_description():
                 '/model/turtle17/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle18/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle19/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle20/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle20/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty', """
             ],
         ),
         # Launch firefly nodes
@@ -184,7 +184,7 @@ def generate_launch_description():
                 {"model_name": "turtle10"}
             ]
         ),
-        Node(
+        """ Node(
             package='firefly',
             executable='firefly',
             parameters=[
@@ -253,5 +253,5 @@ def generate_launch_description():
             parameters=[
                 {"model_name": "turtle20"}
             ]
-        ),
+        ), """
     ])
