@@ -25,9 +25,9 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 static const int ACTIVATION_THRESHOLD = 1500;
-static const int ACTIVATION_EPSILON = 100;
+static const int ACTIVATION_EPSILON = 150;
 static const int ACTIVATION_TIME_INCR = 10;
-static const auto FLASH_DURATION = 1s;
+static const auto FLASH_DURATION = 1.5s;
 
 // Note: count_ is needed for the shared pointer (probably?)
 class FireFly : public rclcpp::Node
@@ -59,6 +59,7 @@ class FireFly : public rclcpp::Node
       this->camera_topic2 = "/world/swarm_world/model";
       this->camera_topic2 += this->model_name;
       this->camera_topic2 += "/link/camera_link/sensor/wide_angle_camera2/image";
+
 
       this->camera_sub_1 = this->create_subscription<sensor_msgs::msg::Image>(
       this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::topic_callback, this, _1));
@@ -179,7 +180,7 @@ class FireFly : public rclcpp::Node
                                         model_name.c_str(), contours.size(), this->previous_flashes_seen);
 
             const std::lock_guard<std::mutex> lock(this->activation_lock);            
-            this->activation += ACTIVATION_EPSILON;
+            this->activation += (ACTIVATION_EPSILON * (contours.size() - this->previous_flashes_seen));
 
             this->previous_flashes_seen = contours.size();
           }

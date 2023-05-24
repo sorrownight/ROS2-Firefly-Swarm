@@ -70,47 +70,7 @@ def generate_launch_description():
                 '/model/turtle7/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle8/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle9/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle10/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle11/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle12/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle13/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle14/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle15/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle16/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle17/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle18/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle19/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/model/turtle20/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-                '/world/swarm_world/model/turtle11/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle12/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle13/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle14/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle15/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle16/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle17/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle18/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle19/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle20/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle11/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle12/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle13/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle14/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle15/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle16/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle17/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle18/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle19/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/world/swarm_world/model/turtle20/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
-                '/model/turtle11/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle12/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle13/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle14/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle15/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle16/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle17/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle18/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle19/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle20/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle10/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',             
             ],
         ),
         # Launch firefly nodes
@@ -184,74 +144,5 @@ def generate_launch_description():
                 {"model_name": "turtle10"}
             ]
         ),
-        Node(
-            package='firefly',
-            executable='firefly',
-            parameters=[
-                {"model_name": "turtle11"}
-            ]
-        ),
-        Node(
-            package='firefly',
-            executable='firefly',
-            parameters=[
-                {"model_name": "turtle12"}
-            ]
-        ),
-        Node(
-            package='firefly',
-            executable='firefly',
-            parameters=[
-                {"model_name": "turtle13"}
-            ]
-        ),
-        Node(
-            package='firefly',
-            executable='firefly',
-            parameters=[
-                {"model_name": "turtle14"}
-            ]
-        ),
-        Node(
-            package='firefly',
-            executable='firefly',
-            parameters=[
-                {"model_name": "turtle15"}
-            ]
-        ),
-        Node(
-            package='firefly',
-            executable='firefly',
-            parameters=[
-                {"model_name": "turtle6"}
-            ]
-        ),
-        Node(
-            package='firefly',
-            executable='firefly',
-            parameters=[
-                {"model_name": "turtle17"}
-            ]
-        ),
-        Node(
-            package='firefly',
-            executable='firefly',
-            parameters=[
-                {"model_name": "turtle18"}
-            ]
-        ),
-        Node(
-            package='firefly',
-            executable='firefly',
-            parameters=[
-                {"model_name": "turtle19"}
-            ]
-        ),
-        Node(
-            package='firefly',
-            executable='firefly',
-            parameters=[
-                {"model_name": "turtle20"}
-            ]
-        ),
+
     ])
