@@ -174,7 +174,7 @@
             <pose>2 4 0 0 0 -3</pose>
         </include>
         
-        <!-- <include>
+        <include>
             <uri>model://turtlefly</uri>      
             <name>turtle6</name>
             <pose>1 2 0 0 0 -2</pose>
@@ -203,7 +203,69 @@
             <uri>model://turtlefly</uri>      
             <name>turtle10</name>
             <pose>-2 4 0 0 0 1</pose>
-        </include> -->
+        </include>
+
+        <include>
+            <uri>model://turtlefly</uri>      
+            <name>turtle11</name>
+            <pose>0.5 2.5 0 0 0 0</pose>
+        </include>
+
+        <include>
+            <uri>model://turtlefly</uri>      
+            <name>turtle12</name>
+            <pose>1.5 0.5 0 0 0 -1.5</pose>
+        </include>
+
+        <include>
+            <uri>model://turtlefly</uri>      
+            <name>turtle13</name>
+            <pose>3.5 -1.5 0 0 0 2.5</pose>
+        </include>
+
+
+        <include>
+            <uri>model://turtlefly</uri>      
+            <name>turtle14</name>
+            <pose>-3.5 -3.5 0 0 0 1.5</pose>
+        </include>
+
+        <include>
+            <uri>model://turtlefly</uri>      
+            <name>turtle15</name>
+            <pose>2.5 4.5 0 0 0 -3</pose>
+        </include>
+        
+        <include>
+            <uri>model://turtlefly</uri>      
+            <name>turtle16</name>
+            <pose>1.5 2.5 0 0 0 -2</pose>
+        </include>
+
+        <include>
+            <uri>model://turtlefly</uri>      
+            <name>turtle17</name>
+            <pose>1.5 3.5 0 0 0 -1</pose>
+        </include>
+
+        <include>
+            <uri>model://turtlefly</uri>      
+            <name>turtle18</name>
+            <pose>-3.5 -1.5 0 0 0 3</pose>
+        </include>
+
+
+        <include>
+            <uri>model://turtlefly</uri>      
+            <name>turtle19</name>
+            <pose>-3.5 -3.5 0 0 0 2</pose>
+        </include>
+
+        <include>
+            <uri>model://turtlefly</uri>      
+            <name>turtle20</name>
+            <pose>-2.5 4.5 0 0 0 1</pose>
+        </include>
 
         <include>
             <pose>5 1 0 0.0 0.0 1.57</pose>

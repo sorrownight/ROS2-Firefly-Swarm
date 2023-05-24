@@ -185,7 +185,7 @@
           <update_rate>4</update_rate>
           </sensor>
           <sensor name="wide_angle_camera2" type="wideanglecamera">
-          <pose>-0.075 0 0 0 0 3.14</pose>
+          <pose>-0.105 0 0 0 0 3.14</pose>
           <camera>
               <horizontal_fov>3.14</horizontal_fov>
               <image>

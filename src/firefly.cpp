@@ -98,17 +98,17 @@ class FireFly : public rclcpp::Node
 
       void publish_callback()
       {
-        auto message = geometry_msgs::msg::Twist();
+        /* auto message = geometry_msgs::msg::Twist();
         std::string cmd_vel_top = "/model" + this->model_name  + "/cmd_vel";
         message.linear.x = (double(rand()))/double(RAND_MAX) * 2;
         message.linear.y = (double(rand()))/double(RAND_MAX);
-        message.angular.z = (double(rand()))/double(RAND_MAX) * 3 - 1;
+        message.angular.z = (double(rand()))/double(RAND_MAX) * 3 - 1; */
 
         /* RCLCPP_INFO(this->get_logger(), "Linear: <%lf,%lf,%lf> | Angular: <%lf,%lf,%lf> to [%s]", 
                       message.linear.x, message.linear.y, message.linear.z, 
                       message.angular.x, message.angular.y, message.angular.z, cmd_vel_top.c_str()); */
           
-        // geometry_pub->publish(message);
+        //geometry_pub->publish(message);
       }
       
       void topic_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
@@ -186,7 +186,7 @@ class FireFly : public rclcpp::Node
         } 
         else this->previous_flashes_seen = 0;
 
-        cv::imshow(this->model_name, thresh);
+        //cv::imshow(this->model_name, thresh);
         cv::waitKey(10);
       }
 
