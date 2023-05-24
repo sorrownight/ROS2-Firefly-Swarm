@@ -52,12 +52,19 @@ class FireFly : public rclcpp::Node
       this->activation_timer = this->create_wall_timer(
         100ms, std::bind(&FireFly::activation_buildup, this)); // 10 buildups/s
 
-      this->camera_topic = "/world/swarm_world/model";
-      this->camera_topic += this->model_name;
-      this->camera_topic += "/link/camera_link/sensor/wide_angle_camera/image";
+      this->camera_topic1 = "/world/swarm_world/model";
+      this->camera_topic1 += this->model_name;
+      this->camera_topic1 += "/link/camera_link/sensor/wide_angle_camera1/image";
 
-      subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
-      this->camera_topic, rclcpp::SensorDataQoS(), std::bind(&FireFly::topic_callback, this, _1));
+      this->camera_topic2 = "/world/swarm_world/model";
+      this->camera_topic2 += this->model_name;
+      this->camera_topic2 += "/link/camera_link/sensor/wide_angle_camera2/image";
+
+      this->camera_sub_1 = this->create_subscription<sensor_msgs::msg::Image>(
+      this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::topic_callback, this, _1));
+
+      this->camera_sub_2 = this->create_subscription<sensor_msgs::msg::Image>(
+      this->camera_topic2, rclcpp::SensorDataQoS(), std::bind(&FireFly::topic_callback, this, _1));
 
       this->flash_pub = this->create_publisher<std_msgs::msg::Empty>("/model" + this->model_name + "/LED_mode", 10);
     }
@@ -183,12 +190,14 @@ class FireFly : public rclcpp::Node
         cv::waitKey(10);
       }
 
-      std::string camera_topic;
+      std::string camera_topic1;
+      std::string camera_topic2;
       rclcpp::TimerBase::SharedPtr publisher_timer;
       rclcpp::TimerBase::SharedPtr activation_timer;
       rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr geometry_pub;
       rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr flash_pub;
-      rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
+      rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_sub_1;
+      rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_sub_2;
       std::string model_name;
       unsigned int previous_flashes_seen;
       int activation;

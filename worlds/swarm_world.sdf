@@ -146,7 +146,7 @@
         <include>
             <uri>model://turtlefly</uri>      
             <name>turtle1</name>
-            <pose>0 2 0 0 0 -2.5</pose>
+            <pose>0 2 0 0 0 0</pose>
         </include>
 
         <include>
