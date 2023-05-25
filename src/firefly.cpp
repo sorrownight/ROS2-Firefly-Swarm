@@ -15,6 +15,7 @@
 #include "std_msgs/msg/empty.hpp"
 #include <geometry_msgs/msg/twist.hpp>
 #include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
@@ -25,9 +26,10 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 static const int ACTIVATION_THRESHOLD = 1500;
-static const int ACTIVATION_EPSILON = 150;
+static const int ACTIVATION_EPSILON = 250;
 static const int ACTIVATION_TIME_INCR = 10;
 static const auto FLASH_DURATION = 1.5s;
+static const float SAFE_DISTANCE = 0.5;
 
 // Note: count_ is needed for the shared pointer (probably?)
 class FireFly : public rclcpp::Node
@@ -43,7 +45,7 @@ class FireFly : public rclcpp::Node
 
       this->geometry_pub = this->create_publisher<geometry_msgs::msg::Twist>("/model" + this->model_name  + "/cmd_vel", 10);
       this->publisher_timer = this->create_wall_timer(
-        500ms, std::bind(&FireFly::publish_callback, this));
+        50ms, std::bind(&FireFly::publish_callback, this));
 
       this->activation = (double(rand()))/double(RAND_MAX) * 1000; // this denotes the initial activation - which every firefly should differ in
 
@@ -60,17 +62,68 @@ class FireFly : public rclcpp::Node
       this->camera_topic2 += this->model_name;
       this->camera_topic2 += "/link/camera_link/sensor/wide_angle_camera2/image";
 
+      this->lidar_topic = "/world/swarm_world/model";
+      this->lidar_topic += this->model_name;
+      this->lidar_topic += "/link/lidar/sensor/hls_lfcd_lds/scan";
+
 
       this->camera_sub_1 = this->create_subscription<sensor_msgs::msg::Image>(
-      this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::topic_callback, this, _1));
+      this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1));
 
       this->camera_sub_2 = this->create_subscription<sensor_msgs::msg::Image>(
-      this->camera_topic2, rclcpp::SensorDataQoS(), std::bind(&FireFly::topic_callback, this, _1));
+      this->camera_topic2, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1));
 
       this->flash_pub = this->create_publisher<std_msgs::msg::Empty>("/model" + this->model_name + "/LED_mode", 10);
+
+      this->lidar_sub = this->create_subscription<sensor_msgs::msg::LaserScan>(
+      this->lidar_topic, rclcpp::SensorDataQoS(), std::bind(&FireFly::lidar_callback, this, _1));
     }
 
     private:
+      void lidar_callback(const sensor_msgs::msg::LaserScan::ConstSharedPtr msg) // Producer: Queue size is only 1
+      {       
+        float min_range = msg->range_max;
+        int i = 0;
+        int minIdx = -1;
+        for (auto& range : msg->ranges) {
+          if (range >= msg->range_min && range < min_range) {
+            min_range = range;
+            minIdx = i;
+          }
+          i++;
+        }
+
+        float turn_angle = 0;
+        geometry_msgs::msg::Twist motion;
+        if (min_range < SAFE_DISTANCE) {
+          float obstacle_angle = minIdx * msg->angle_increment; // in rad
+          // Turn 180 or -180 from the obstacle -> should be < 6.14
+          turn_angle = obstacle_angle + (obstacle_angle > 1.57 ? 3.14 : -3.14); 
+          /* RCLCPP_INFO(this->get_logger(), "Robot %s found obstacle at range: %f | Turning: %f"
+              , model_name.c_str(), min_range, turn_angle); */
+          motion.linear.x = 0;
+          motion.angular.z = 3.14;
+        } else {
+          motion.linear.x = 2;
+          motion.angular.z = 0;
+        }
+        std::lock_guard<std::mutex> lck(geo_work_lck);
+        this->turn_angle = turn_angle;
+
+        geometry_pub->publish(motion);
+        
+      }
+
+      void publish_callback() // Consumer
+      { 
+        /* geometry_msgs::msg::Twist msg;
+        msg.linear.x = 2;
+        msg.linear.y = 0;
+        msg.angular.z = this->turn_angle; // We don't care about stale data here!
+
+        geometry_pub->publish(msg); */
+      }
+
       void activation_buildup()
       {
         // This is a simplication of the discrete function presented in the IEEE paper
@@ -85,7 +138,7 @@ class FireFly : public rclcpp::Node
         if (activation > ACTIVATION_THRESHOLD) {
           // Only one flash should occur at any given time!
           std::thread(&FireFly::flash, this).detach();
-          activation = 0;
+          activation -= ACTIVATION_THRESHOLD;
         }
       }
       void flash()
@@ -96,23 +149,8 @@ class FireFly : public rclcpp::Node
         std::this_thread::sleep_for(FLASH_DURATION);
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED OFF
       }
-
-      void publish_callback()
-      {
-        /* auto message = geometry_msgs::msg::Twist();
-        std::string cmd_vel_top = "/model" + this->model_name  + "/cmd_vel";
-        message.linear.x = (double(rand()))/double(RAND_MAX) * 2;
-        message.linear.y = (double(rand()))/double(RAND_MAX);
-        message.angular.z = (double(rand()))/double(RAND_MAX) * 3 - 1; */
-
-        /* RCLCPP_INFO(this->get_logger(), "Linear: <%lf,%lf,%lf> | Angular: <%lf,%lf,%lf> to [%s]", 
-                      message.linear.x, message.linear.y, message.linear.z, 
-                      message.angular.x, message.angular.y, message.angular.z, cmd_vel_top.c_str()); */
-          
-        //geometry_pub->publish(message);
-      }
       
-      void topic_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
+      void camera_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
       {
         // RCLCPP_INFO(this->get_logger(), "Image Received");
           cv_bridge::CvImagePtr cv_ptr;
@@ -176,8 +214,8 @@ class FireFly : public rclcpp::Node
 
           cv::findContours(thresh, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
           if (contours.size() > this->previous_flashes_seen) {
-            RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", 
-                                        model_name.c_str(), contours.size(), this->previous_flashes_seen);
+            /* RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", 
+                                        model_name.c_str(), contours.size(), this->previous_flashes_seen); */
 
             const std::lock_guard<std::mutex> lock(this->activation_lock);            
             this->activation += (ACTIVATION_EPSILON * (contours.size() - this->previous_flashes_seen));
@@ -193,17 +231,21 @@ class FireFly : public rclcpp::Node
 
       std::string camera_topic1;
       std::string camera_topic2;
+      std::string lidar_topic;
       rclcpp::TimerBase::SharedPtr publisher_timer;
       rclcpp::TimerBase::SharedPtr activation_timer;
       rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr geometry_pub;
       rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr flash_pub;
       rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_sub_1;
       rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_sub_2;
+      rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr lidar_sub;
       std::string model_name;
       unsigned int previous_flashes_seen;
       int activation;
       std::mutex activation_lock;
       std::mutex flash_lock;
+      std::mutex geo_work_lck;
+      float turn_angle;
       size_t count_;
 };
 
