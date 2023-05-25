@@ -8,6 +8,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <sstream>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/qos.hpp"
@@ -169,7 +170,14 @@ class FireFly : public rclcpp::Node
           cv::Mat resizedImg;
           cv::resize(cv_ptr->image, resizedImg, cv::Size(msg->width, msg->height), cv::INTER_LINEAR);
 
+          auto start = std::chrono::steady_clock::now();
           this->extract_green(resizedImg);
+          auto end = std::chrono::steady_clock::now();
+
+          std::ostringstream out;
+          out << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+          RCLCPP_INFO(this->get_logger(), "Image processing time: %s", out.str().c_str());
       }
 
       void extract_green(const cv::Mat& img)
@@ -198,24 +206,16 @@ class FireFly : public rclcpp::Node
         cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, Kernel);
         cv::morphologyEx(mask, mask, cv::MORPH_OPEN, Kernel);
 
-        cv::Mat merged;
-        cv::bitwise_and(img, img, merged, mask);
-
-        // Convert to binary (Just black or white)
-        cv::Mat grayscaled;
-        cv::cvtColor(merged, grayscaled, cv::COLOR_BGR2GRAY);
-        cv::Mat thresh;
-        cv::threshold(grayscaled, thresh, 2, 255, cv::THRESH_BINARY);
-        int pix_count = cv::countNonZero(grayscaled);
+        int pix_count = cv::countNonZero(mask);
         if (pix_count > 0) {
           // Reference: https://stackoverflow.com/questions/44749735/count-red-color-object-from-video-opencv-python
           std::vector<std::vector<cv::Point> > contours;
           std::vector<cv::Vec4i> hierarchy;
 
-          cv::findContours(thresh, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+          cv::findContours(mask, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
           if (contours.size() > this->previous_flashes_seen) {
-            /* RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", 
-                                        model_name.c_str(), contours.size(), this->previous_flashes_seen); */
+            RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", 
+                                        model_name.c_str(), contours.size(), this->previous_flashes_seen);
 
             const std::lock_guard<std::mutex> lock(this->activation_lock);            
             this->activation += (ACTIVATION_EPSILON * (contours.size() - this->previous_flashes_seen));
@@ -223,7 +223,10 @@ class FireFly : public rclcpp::Node
             this->previous_flashes_seen = contours.size();
           }
         } 
-        else this->previous_flashes_seen = 0;
+        else {
+          const std::lock_guard<std::mutex> lock(this->activation_lock);            
+          this->previous_flashes_seen = 0;
+        }
 
         //cv::imshow(this->model_name, thresh);
         cv::waitKey(10);
