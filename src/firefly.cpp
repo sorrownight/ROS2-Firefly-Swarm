@@ -1,14 +1,12 @@
 #include <cstdio>
 #include <chrono>
 #include <cstdlib>
-#include <functional>
 #include <memory>
 #include <string>
 #include <chrono>
 #include <vector>
 #include <thread>
 #include <mutex>
-#include <sstream>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/qos.hpp"
@@ -21,7 +19,6 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
-#include <opencv2/highgui.hpp>
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -170,14 +167,7 @@ class FireFly : public rclcpp::Node
           cv::Mat resizedImg;
           cv::resize(cv_ptr->image, resizedImg, cv::Size(msg->width, msg->height), cv::INTER_LINEAR);
 
-          auto start = std::chrono::steady_clock::now();
           this->extract_green(resizedImg);
-          auto end = std::chrono::steady_clock::now();
-
-          std::ostringstream out;
-          out << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-
-          RCLCPP_INFO(this->get_logger(), "Image processing time: %s", out.str().c_str());
       }
 
       void extract_green(const cv::Mat& img)
@@ -214,8 +204,8 @@ class FireFly : public rclcpp::Node
 
           cv::findContours(mask, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
           if (contours.size() > this->previous_flashes_seen) {
-            RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", 
-                                        model_name.c_str(), contours.size(), this->previous_flashes_seen);
+            /* RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", 
+                                        model_name.c_str(), contours.size(), this->previous_flashes_seen); */
 
             const std::lock_guard<std::mutex> lock(this->activation_lock);            
             this->activation += (ACTIVATION_EPSILON * (contours.size() - this->previous_flashes_seen));
