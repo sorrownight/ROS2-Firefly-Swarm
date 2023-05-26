@@ -36,7 +36,7 @@ class FireFly : public rclcpp::Node
     FireFly()
     : Node("firefly"), count_(0)
     {
-      this->previous_flashes_seen = 0;
+      this->cam1_prev_flashes = 0;
       this->declare_parameter("model_name", "turtle1");
       this->model_name = "/" + this->get_parameter("model_name").as_string();
       std::srand(std::time(nullptr) + model_name[model_name.size()-1]);
@@ -76,10 +76,10 @@ class FireFly : public rclcpp::Node
       pub_opt.callback_group = pub_grp;
 
       this->camera_sub_1 = this->create_subscription<sensor_msgs::msg::Image>(
-      this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1), camera_opt_1);
+      this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera1_callback, this, _1), camera_opt_1);
 
       this->camera_sub_2 = this->create_subscription<sensor_msgs::msg::Image>(
-      this->camera_topic2, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1), camera_opt_2);
+      this->camera_topic2, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera2_callback, this, _1), camera_opt_2);
 
       this->flash_pub = this->create_publisher<std_msgs::msg::Empty>("/model" + this->model_name + "/LED_mode", 10, pub_opt);
       this->geometry_pub = this->create_publisher<geometry_msgs::msg::Twist>("/model" + this->model_name  + "/cmd_vel", 10, pub_opt);
@@ -165,9 +165,9 @@ class FireFly : public rclcpp::Node
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED OFF
       }
       
-      void camera_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
+      void camera1_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
       {
-        // RCLCPP_INFO(this->get_logger(), "Image Received");
+          // RCLCPP_INFO(this->get_logger(), "Image Received");
           cv_bridge::CvImagePtr cv_ptr;
           try
           {
@@ -179,15 +179,28 @@ class FireFly : public rclcpp::Node
               return;
           }
 
-          if (cv_ptr->image.rows > 60 && cv_ptr->image.cols > 60)
-              cv::circle(cv_ptr->image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
-          cv::Mat resizedImg;
-          cv::resize(cv_ptr->image, resizedImg, cv::Size(msg->width, msg->height), cv::INTER_LINEAR);
-
-          this->extract_green(resizedImg);
+          this->extract_green(cv_ptr->image, true);
       }
 
-      void extract_green(const cv::Mat& img)
+      void camera2_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
+      {
+          // RCLCPP_INFO(this->get_logger(), "Image Received");
+          cv_bridge::CvImagePtr cv_ptr;
+          try
+          {
+              cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+          }
+          catch (cv_bridge::Exception& e)
+          {
+              RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
+              return;
+          }
+
+          this->extract_green(cv_ptr->image, false);
+      }
+
+      // Poor practice with this bool flag here. DO NOT ATTEMPT AT HOME!
+      void extract_green(const cv::Mat& img, bool isCam1)
       {
         // Credit: 
         // https://techvidvan.com/tutorials/detect-objects-of-similar-color-using-opencv-in-python/
@@ -214,25 +227,25 @@ class FireFly : public rclcpp::Node
         cv::morphologyEx(mask, mask, cv::MORPH_OPEN, Kernel);
 
         int pix_count = cv::countNonZero(mask);
+        unsigned int* prev_flash_ptr = (isCam1 ? &this->cam1_prev_flashes : &this->cam2_prev_flashes);
         if (pix_count > 0) {
           // Reference: https://stackoverflow.com/questions/44749735/count-red-color-object-from-video-opencv-python
           std::vector<std::vector<cv::Point> > contours;
           std::vector<cv::Vec4i> hierarchy;
 
           cv::findContours(mask, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-          if (contours.size() > this->previous_flashes_seen) {
+          if (contours.size() > *prev_flash_ptr) {
             /* RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", 
                                         model_name.c_str(), contours.size(), this->previous_flashes_seen); */
 
             const std::lock_guard<std::mutex> lock(this->activation_lock);            
-            this->activation += (ACTIVATION_EPSILON * (contours.size() - this->previous_flashes_seen));
-
-            this->previous_flashes_seen = contours.size();
+            this->activation += (ACTIVATION_EPSILON * (contours.size() - *prev_flash_ptr));
+            
+            *prev_flash_ptr = contours.size();
           }
         } 
         else {
-          const std::lock_guard<std::mutex> lock(this->activation_lock);            
-          this->previous_flashes_seen = 0;
+          *prev_flash_ptr = 0;
         }
 
         //cv::imshow(this->model_name, mask);
@@ -250,7 +263,8 @@ class FireFly : public rclcpp::Node
       rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_sub_2;
       rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr lidar_sub;
       std::string model_name;
-      unsigned int previous_flashes_seen;
+      unsigned int cam1_prev_flashes;
+      unsigned int cam2_prev_flashes;
       int activation;
       std::mutex activation_lock;
       float turn_angle;
