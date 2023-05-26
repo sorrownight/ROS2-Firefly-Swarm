@@ -25,8 +25,8 @@ using std::placeholders::_1;
 
 static const int ACTIVATION_THRESHOLD = 1500;
 static const int ACTIVATION_EPSILON = 250;
-static const int ACTIVATION_TIME_INCR = 10;
-static const auto FLASH_DURATION = 1.5s;
+static const int ACTIVATION_TIME_INCR = 1;
+static const auto FLASH_DURATION = std::chrono::duration_cast<std::chrono::nanoseconds>(1.5s);
 static const float SAFE_DISTANCE = 0.5;
 
 // Note: count_ is needed for the shared pointer (probably?)
@@ -41,16 +41,18 @@ class FireFly : public rclcpp::Node
       this->model_name = "/" + this->get_parameter("model_name").as_string();
       std::srand(std::time(nullptr) + model_name[model_name.size()-1]);
 
-      this->geometry_pub = this->create_publisher<geometry_msgs::msg::Twist>("/model" + this->model_name  + "/cmd_vel", 10);
-      this->publisher_timer = this->create_wall_timer(
-        50ms, std::bind(&FireFly::publish_callback, this));
+/*       this->publisher_timer = this->create_wall_timer(
+        50ms, std::bind(&FireFly::publish_callback, this)); */
 
       this->activation = (double(rand()))/double(RAND_MAX) * 1000; // this denotes the initial activation - which every firefly should differ in
 
       RCLCPP_INFO(this->get_logger(), "Robot %s starts with initial activation: %d", model_name.c_str(), this->activation);
 
+      // activations should not race
+      auto activation_grp = this->create_callback_group((rclcpp::CallbackGroupType::MutuallyExclusive));
+
       this->activation_timer = this->create_wall_timer(
-        100ms, std::bind(&FireFly::activation_buildup, this)); // 10 buildups/s
+        10ms, std::bind(&FireFly::activation_buildup, this), activation_grp); // 10 buildups/s
 
       this->camera_topic1 = "/world/swarm_world/model";
       this->camera_topic1 += this->model_name;
@@ -64,17 +66,27 @@ class FireFly : public rclcpp::Node
       this->lidar_topic += this->model_name;
       this->lidar_topic += "/link/lidar/sensor/hls_lfcd_lds/scan";
 
+      auto free_grp = this->create_callback_group((rclcpp::CallbackGroupType::Reentrant));
+      rclcpp::SubscriptionOptions camera_opt;
+      rclcpp::PublisherOptions pub_opt;
+      camera_opt.callback_group = free_grp;
+      pub_opt.callback_group = free_grp;
 
       this->camera_sub_1 = this->create_subscription<sensor_msgs::msg::Image>(
-      this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1));
+      this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1), camera_opt);
 
       this->camera_sub_2 = this->create_subscription<sensor_msgs::msg::Image>(
-      this->camera_topic2, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1));
+      this->camera_topic2, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1), camera_opt);
 
-      this->flash_pub = this->create_publisher<std_msgs::msg::Empty>("/model" + this->model_name + "/LED_mode", 10);
+      this->flash_pub = this->create_publisher<std_msgs::msg::Empty>("/model" + this->model_name + "/LED_mode", 10, pub_opt);
+      this->geometry_pub = this->create_publisher<geometry_msgs::msg::Twist>("/model" + this->model_name  + "/cmd_vel", 10, pub_opt);
+
+      auto lidar_grp = this->create_callback_group((rclcpp::CallbackGroupType::MutuallyExclusive));
+      rclcpp::SubscriptionOptions lidar_opt;
+      lidar_opt.callback_group = lidar_grp;
 
       this->lidar_sub = this->create_subscription<sensor_msgs::msg::LaserScan>(
-      this->lidar_topic, rclcpp::SensorDataQoS(), std::bind(&FireFly::lidar_callback, this, _1));
+      this->lidar_topic, rclcpp::SensorDataQoS(), std::bind(&FireFly::lidar_callback, this, _1), lidar_opt);
     }
 
     private:
@@ -105,7 +117,6 @@ class FireFly : public rclcpp::Node
           motion.linear.x = 2;
           motion.angular.z = 0;
         }
-        std::lock_guard<std::mutex> lck(geo_work_lck);
         this->turn_angle = turn_angle;
 
         geometry_pub->publish(motion);
@@ -141,10 +152,9 @@ class FireFly : public rclcpp::Node
       }
       void flash()
       {
-        const std::lock_guard<std::mutex> lock(this->flash_lock);
         RCLCPP_INFO(this->get_logger(), "Lo! Robot %s is flashing!", model_name.c_str());
-        this->flash_pub->publish(std_msgs::msg::Empty()); // LED ON
-        std::this_thread::sleep_for(FLASH_DURATION);
+        this->flash_pub->publish(std_msgs::msg::Empty()); // LED ON        
+        rclcpp::sleep_for(FLASH_DURATION);
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED OFF
       }
       
@@ -236,8 +246,6 @@ class FireFly : public rclcpp::Node
       unsigned int previous_flashes_seen;
       int activation;
       std::mutex activation_lock;
-      std::mutex flash_lock;
-      std::mutex geo_work_lck;
       float turn_angle;
       size_t count_;
 };
@@ -248,7 +256,10 @@ int main(int argc, char ** argv)
   cv::startWindowThread();
 
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<FireFly>());
+  auto node = std::make_shared<FireFly>();
+  rclcpp::executors::MultiThreadedExecutor exe;
+  exe.add_node(node);
+  exe.spin();
   rclcpp::shutdown();
   
   return 0;
