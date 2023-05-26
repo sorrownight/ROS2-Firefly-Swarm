@@ -24,8 +24,8 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 static const int ACTIVATION_THRESHOLD = 1500;
-static const int ACTIVATION_EPSILON = 250;
-static const int ACTIVATION_TIME_INCR = 1;
+static const int ACTIVATION_EPSILON = 150;
+static const int ACTIVATION_TIME_INCR = 5;
 static const auto FLASH_DURATION = std::chrono::duration_cast<std::chrono::nanoseconds>(1.5s);
 static const float SAFE_DISTANCE = 0.5;
 
@@ -43,14 +43,14 @@ class FireFly : public rclcpp::Node
 
 /*       this->publisher_timer = this->create_wall_timer(
         50ms, std::bind(&FireFly::publish_callback, this)); */
-
-      this->activation = (double(rand()))/double(RAND_MAX) * 1000; // this denotes the initial activation - which every firefly should differ in
+      //(double(rand()))/double(RAND_MAX) * 1000
+      this->activation = 0; // this denotes the initial activation - which every firefly should differ in
 
       RCLCPP_INFO(this->get_logger(), "Robot %s starts with initial activation: %d", model_name.c_str(), this->activation);
 
       // Default Mutually exclusive group. Passing a new group here seems to be bugged
       this->activation_timer = this->create_wall_timer(
-        10ms, std::bind(&FireFly::activation_buildup, this)); // 10 buildups/s
+        50ms, std::bind(&FireFly::activation_buildup, this)); // 10 buildups/s
 
       this->camera_topic1 = "/world/swarm_world/model";
       this->camera_topic1 += this->model_name;
@@ -212,16 +212,16 @@ class FireFly : public rclcpp::Node
         int iLowH = 45;
         int iHighH = 90;
 
-        int iLowS = 50; 
+        int iLowS = 20; 
         int iHighS = 255;
 
-        int iLowV = 50;
+        int iLowV = 20;
         int iHighV = 255;
 
         cv::Mat mask;
         cv::inRange(hsv, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), mask);
 
-        cv::Mat Kernel = cv::Mat(cv::Size(7,7),CV_8UC1,cv::Scalar(255));
+        cv::Mat Kernel = cv::Mat(cv::Size(5,5),CV_8UC1,cv::Scalar(255));
 
         cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, Kernel);
         cv::morphologyEx(mask, mask, cv::MORPH_OPEN, Kernel);
@@ -236,7 +236,7 @@ class FireFly : public rclcpp::Node
           cv::findContours(mask, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
           if (contours.size() > *prev_flash_ptr) {
             /* RCLCPP_INFO(this->get_logger(), "Robot %s detected %ld flashings vs %d in the last frame", 
-                                        model_name.c_str(), contours.size(), this->previous_flashes_seen); */
+                                        model_name.c_str(), contours.size(), *prev_flash_ptr); */
 
             const std::lock_guard<std::mutex> lock(this->activation_lock);            
             this->activation += (ACTIVATION_EPSILON * (contours.size() - *prev_flash_ptr));
@@ -248,7 +248,7 @@ class FireFly : public rclcpp::Node
           *prev_flash_ptr = 0;
         }
 
-        //cv::imshow(this->model_name, mask);
+        cv::imshow(this->model_name + (isCam1 ? "1" : "2"), mask);
         cv::waitKey(10);
       }
 
