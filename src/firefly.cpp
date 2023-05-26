@@ -24,7 +24,7 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 static const int ACTIVATION_THRESHOLD = 1500;
-static const int ACTIVATION_EPSILON = 250;
+static const int ACTIVATION_EPSILON = 1000;
 static const int ACTIVATION_TIME_INCR = 5;
 static const auto FLASH_DURATION = std::chrono::duration_cast<std::chrono::nanoseconds>(1.5s);
 static const float SAFE_DISTANCE = 0.5;
@@ -67,13 +67,13 @@ class FireFly : public rclcpp::Node
       // Must enforce ordering for camera. Publishers can go ham.
       auto camera_grp_1 = this->create_callback_group((rclcpp::CallbackGroupType::MutuallyExclusive));
       auto camera_grp_2 = this->create_callback_group((rclcpp::CallbackGroupType::MutuallyExclusive));
-      auto pub_grp = this->create_callback_group((rclcpp::CallbackGroupType::Reentrant));
+      auto geom_grp = this->create_callback_group((rclcpp::CallbackGroupType::Reentrant));
       rclcpp::SubscriptionOptions camera_opt_1;
       rclcpp::SubscriptionOptions camera_opt_2;
-      rclcpp::PublisherOptions pub_opt;
+      rclcpp::PublisherOptions geom_opt;
       camera_opt_1.callback_group = camera_grp_1;
       camera_opt_2.callback_group = camera_grp_2;
-      pub_opt.callback_group = pub_grp;
+      geom_opt.callback_group = geom_grp;
 
       this->camera_sub_1 = this->create_subscription<sensor_msgs::msg::Image>(
       this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera1_callback, this, _1), camera_opt_1);
@@ -81,8 +81,13 @@ class FireFly : public rclcpp::Node
       this->camera_sub_2 = this->create_subscription<sensor_msgs::msg::Image>(
       this->camera_topic2, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera2_callback, this, _1), camera_opt_2);
 
-      this->flash_pub = this->create_publisher<std_msgs::msg::Empty>("/model" + this->model_name + "/LED_mode", 10, pub_opt);
-      this->geometry_pub = this->create_publisher<geometry_msgs::msg::Twist>("/model" + this->model_name  + "/cmd_vel", 10, pub_opt);
+      this->geometry_pub = this->create_publisher<geometry_msgs::msg::Twist>("/model" + this->model_name  + "/cmd_vel", 10, geom_opt);
+
+      // We should never have 2 flashes on the same robot at the same time!
+      auto flash_grp = this->create_callback_group((rclcpp::CallbackGroupType::Reentrant));
+      rclcpp::PublisherOptions flash_opt;
+      flash_opt.callback_group = flash_grp;
+      this->flash_pub = this->create_publisher<std_msgs::msg::Empty>("/model" + this->model_name + "/LED_mode", 1, flash_opt);
 
       auto lidar_grp = this->create_callback_group((rclcpp::CallbackGroupType::MutuallyExclusive));
       rclcpp::SubscriptionOptions lidar_opt;
@@ -159,7 +164,6 @@ class FireFly : public rclcpp::Node
       {
         RCLCPP_INFO(this->get_logger(), "Lo! Robot %s is flashing!", model_name.c_str());
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED ON        
-        //rclcpp::sleep_for(FLASH_DURATION);
         rclcpp::sleep_for(FLASH_DURATION);
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED OFF
       }
