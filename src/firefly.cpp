@@ -48,11 +48,9 @@ class FireFly : public rclcpp::Node
 
       RCLCPP_INFO(this->get_logger(), "Robot %s starts with initial activation: %d", model_name.c_str(), this->activation);
 
-      // activations should not race
-      auto activation_grp = this->create_callback_group((rclcpp::CallbackGroupType::MutuallyExclusive));
-
+      // Default Mutually exclusive group. Passing a new group here seems to be bugged
       this->activation_timer = this->create_wall_timer(
-        10ms, std::bind(&FireFly::activation_buildup, this), activation_grp); // 10 buildups/s
+        10ms, std::bind(&FireFly::activation_buildup, this)); // 10 buildups/s
 
       this->camera_topic1 = "/world/swarm_world/model";
       this->camera_topic1 += this->model_name;
@@ -66,17 +64,22 @@ class FireFly : public rclcpp::Node
       this->lidar_topic += this->model_name;
       this->lidar_topic += "/link/lidar/sensor/hls_lfcd_lds/scan";
 
-      auto free_grp = this->create_callback_group((rclcpp::CallbackGroupType::Reentrant));
-      rclcpp::SubscriptionOptions camera_opt;
+      // Must enforce ordering for camera. Publishers can go ham.
+      auto camera_grp_1 = this->create_callback_group((rclcpp::CallbackGroupType::MutuallyExclusive));
+      auto camera_grp_2 = this->create_callback_group((rclcpp::CallbackGroupType::MutuallyExclusive));
+      auto pub_grp = this->create_callback_group((rclcpp::CallbackGroupType::Reentrant));
+      rclcpp::SubscriptionOptions camera_opt_1;
+      rclcpp::SubscriptionOptions camera_opt_2;
       rclcpp::PublisherOptions pub_opt;
-      camera_opt.callback_group = free_grp;
-      pub_opt.callback_group = free_grp;
+      camera_opt_1.callback_group = camera_grp_1;
+      camera_opt_2.callback_group = camera_grp_2;
+      pub_opt.callback_group = pub_grp;
 
       this->camera_sub_1 = this->create_subscription<sensor_msgs::msg::Image>(
-      this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1), camera_opt);
+      this->camera_topic1, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1), camera_opt_1);
 
       this->camera_sub_2 = this->create_subscription<sensor_msgs::msg::Image>(
-      this->camera_topic2, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1), camera_opt);
+      this->camera_topic2, rclcpp::SensorDataQoS(), std::bind(&FireFly::camera_callback, this, _1), camera_opt_2);
 
       this->flash_pub = this->create_publisher<std_msgs::msg::Empty>("/model" + this->model_name + "/LED_mode", 10, pub_opt);
       this->geometry_pub = this->create_publisher<geometry_msgs::msg::Twist>("/model" + this->model_name  + "/cmd_vel", 10, pub_opt);
@@ -141,20 +144,24 @@ class FireFly : public rclcpp::Node
         // the rate at which the activation builds up (h(x_i)) is the same across all fireflies
         // We further question this constraint, however. Perhaps it can be removed. Further testing is required.
         // With the initial activation being 0, a firefly shall flash after exactly 15s
-        const std::lock_guard<std::mutex> lock(this->activation_lock);
-        this->activation += ACTIVATION_TIME_INCR; // 1s == 100 => 15s == 1500
+
+        // Sorry, Bjarne! Gotta ditch RAII here... too sensitive to latency
+        if (!this->activation_lock.try_lock()) return; 
+        this->activation += ACTIVATION_TIME_INCR;
 
         if (activation > ACTIVATION_THRESHOLD) {
           // Only one flash should occur at any given time!
           std::thread(&FireFly::flash, this).detach();
           activation -= ACTIVATION_THRESHOLD;
         }
+        this->activation_lock.unlock();
       }
       void flash()
       {
         RCLCPP_INFO(this->get_logger(), "Lo! Robot %s is flashing!", model_name.c_str());
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED ON        
-        rclcpp::sleep_for(FLASH_DURATION);
+        //rclcpp::sleep_for(FLASH_DURATION);
+        std::this_thread::sleep_for(FLASH_DURATION);
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED OFF
       }
       
@@ -228,7 +235,7 @@ class FireFly : public rclcpp::Node
           this->previous_flashes_seen = 0;
         }
 
-        //cv::imshow(this->model_name, thresh);
+        //cv::imshow(this->model_name, mask);
         cv::waitKey(10);
       }
 
@@ -257,7 +264,7 @@ int main(int argc, char ** argv)
 
   rclcpp::init(argc, argv);
   auto node = std::make_shared<FireFly>();
-  rclcpp::executors::MultiThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 32);
   exe.add_node(node);
   exe.spin();
   rclcpp::shutdown();
