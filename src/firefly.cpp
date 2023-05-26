@@ -24,7 +24,7 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 static const int ACTIVATION_THRESHOLD = 1500;
-static const int ACTIVATION_EPSILON = 1000;
+static const int ACTIVATION_EPSILON = 250;
 static const int ACTIVATION_TIME_INCR = 5;
 static const auto FLASH_DURATION = std::chrono::duration_cast<std::chrono::nanoseconds>(1.5s);
 static const float SAFE_DISTANCE = 0.5;
@@ -122,7 +122,7 @@ class FireFly : public rclcpp::Node
           motion.linear.x = 0;
           motion.angular.z = 3.14;
         } else {
-          motion.linear.x = 2;
+          motion.linear.x = 3;
           motion.angular.z = 0;
         }
         this->turn_angle = turn_angle;

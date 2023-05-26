@@ -154,7 +154,7 @@
             <name>turtle2</name>
             <pose>1 0 0 0 0 -1.5</pose>
         </include>
-<!-- 
+
         <include>
             <uri>model://turtlefly</uri>      
             <name>turtle3</name>
@@ -204,7 +204,7 @@
             <name>turtle10</name>
             <pose>0.5 0.5 0 0 0 1</pose>
         </include>
- -->
+
     <model name='wall1'>
       <pose>3 0 0 0 0 0</pose>
       <link name='box_link'>
