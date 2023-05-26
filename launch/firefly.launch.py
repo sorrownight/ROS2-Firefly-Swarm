@@ -55,7 +55,34 @@ def generate_launch_description():
                 '/model/turtle2/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle3/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle4/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
-                '/model/turtle5/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',       
+                '/model/turtle5/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',  
+                
+                '/model/turtle6/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle7/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle8/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle9/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/model/turtle10/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+                '/world/swarm_world/model/turtle6/link/lidar/sensor/hls_lfcd_lds/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
+                '/world/swarm_world/model/turtle7/link/lidar/sensor/hls_lfcd_lds/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
+                '/world/swarm_world/model/turtle8/link/lidar/sensor/hls_lfcd_lds/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
+                '/world/swarm_world/model/turtle9/link/lidar/sensor/hls_lfcd_lds/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
+                '/world/swarm_world/model/turtle10/link/lidar/sensor/hls_lfcd_lds/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
+                '/world/swarm_world/model/turtle6/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle7/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle8/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle9/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle10/link/camera_link/sensor/wide_angle_camera1/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle6/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle7/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle8/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle9/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/world/swarm_world/model/turtle10/link/camera_link/sensor/wide_angle_camera2/image@sensor_msgs/msg/Image@gz.msgs.Image',
+                '/model/turtle6/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle7/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle8/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle9/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
+                '/model/turtle10/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',     
+                
             ],
         ),
         # Launch firefly nodes
@@ -92,6 +119,41 @@ def generate_launch_description():
             executable='firefly',
             parameters=[
                 {"model_name": "turtle5"}
+            ]
+        ),
+        Node(
+            package='firefly',
+            executable='firefly',
+            parameters=[
+                {"model_name": "turtle6"}
+            ]
+        ),
+        Node(
+            package='firefly',
+            executable='firefly',
+            parameters=[
+                {"model_name": "turtle7"}
+            ]
+        ),
+        Node(
+            package='firefly',
+            executable='firefly',
+            parameters=[
+                {"model_name": "turtle8"}
+            ]
+        ),
+        Node(
+            package='firefly',
+            executable='firefly',
+            parameters=[
+                {"model_name": "turtle9"}
+            ]
+        ),
+        Node(
+            package='firefly',
+            executable='firefly',
+            parameters=[
+                {"model_name": "turtle10"}
             ]
         ),
     ])

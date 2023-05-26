@@ -24,7 +24,7 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 static const int ACTIVATION_THRESHOLD = 1500;
-static const int ACTIVATION_EPSILON = 150;
+static const int ACTIVATION_EPSILON = 250;
 static const int ACTIVATION_TIME_INCR = 5;
 static const auto FLASH_DURATION = std::chrono::duration_cast<std::chrono::nanoseconds>(1.5s);
 static const float SAFE_DISTANCE = 0.5;
@@ -43,8 +43,8 @@ class FireFly : public rclcpp::Node
 
 /*       this->publisher_timer = this->create_wall_timer(
         50ms, std::bind(&FireFly::publish_callback, this)); */
-      //(double(rand()))/double(RAND_MAX) * 1000
-      this->activation = 0; // this denotes the initial activation - which every firefly should differ in
+      // this denotes the initial activation - which every firefly should differ in
+      this->activation = (double(rand()))/double(RAND_MAX) * 1000; 
 
       RCLCPP_INFO(this->get_logger(), "Robot %s starts with initial activation: %d", model_name.c_str(), this->activation);
 
@@ -150,9 +150,8 @@ class FireFly : public rclcpp::Node
         this->activation += ACTIVATION_TIME_INCR;
 
         if (activation > ACTIVATION_THRESHOLD) {
-          // Only one flash should occur at any given time!
           std::thread(&FireFly::flash, this).detach();
-          activation -= ACTIVATION_THRESHOLD;
+          activation = 0;
         }
         this->activation_lock.unlock();
       }
@@ -161,7 +160,7 @@ class FireFly : public rclcpp::Node
         RCLCPP_INFO(this->get_logger(), "Lo! Robot %s is flashing!", model_name.c_str());
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED ON        
         //rclcpp::sleep_for(FLASH_DURATION);
-        std::this_thread::sleep_for(FLASH_DURATION);
+        rclcpp::sleep_for(FLASH_DURATION);
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED OFF
       }
       
@@ -240,6 +239,10 @@ class FireFly : public rclcpp::Node
 
             const std::lock_guard<std::mutex> lock(this->activation_lock);            
             this->activation += (ACTIVATION_EPSILON * (contours.size() - *prev_flash_ptr));
+            if (activation > ACTIVATION_THRESHOLD) {
+              std::thread(&FireFly::flash, this).detach();
+              activation = 0;
+            }
             
             *prev_flash_ptr = contours.size();
           }
@@ -248,8 +251,8 @@ class FireFly : public rclcpp::Node
           *prev_flash_ptr = 0;
         }
 
-        cv::imshow(this->model_name + (isCam1 ? "1" : "2"), mask);
-        cv::waitKey(10);
+        /* cv::imshow(this->model_name + (isCam1 ? "1" : "2"), mask);
+        cv::waitKey(10); */
       }
 
       std::string camera_topic1;
@@ -278,7 +281,7 @@ int main(int argc, char ** argv)
 
   rclcpp::init(argc, argv);
   auto node = std::make_shared<FireFly>();
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 32);
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 4);
   exe.add_node(node);
   exe.spin();
   rclcpp::shutdown();
