@@ -56,6 +56,11 @@ def generate_launch_description():
                 '/model/turtle3/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle4/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle5/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',  
+                '/model/turtle1/LED_color@std_msgs/msg/ColorRGBA@gz.msgs.Color',
+                '/model/turtle2/LED_color@std_msgs/msg/ColorRGBA@gz.msgs.Color',
+                '/model/turtle3/LED_color@std_msgs/msg/ColorRGBA@gz.msgs.Color',
+                '/model/turtle4/LED_color@std_msgs/msg/ColorRGBA@gz.msgs.Color',
+                '/model/turtle5/LED_color@std_msgs/msg/ColorRGBA@gz.msgs.Color',  
                 
                 '/model/turtle6/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
                 '/model/turtle7/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
@@ -82,7 +87,11 @@ def generate_launch_description():
                 '/model/turtle8/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle9/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',
                 '/model/turtle10/LED_mode@std_msgs/msg/Empty@gz.msgs.Empty',     
-                
+                '/model/turtle6/LED_color@std_msgs/msg/ColorRGBA@gz.msgs.Color',
+                '/model/turtle7/LED_color@std_msgs/msg/ColorRGBA@gz.msgs.Color',
+                '/model/turtle8/LED_color@std_msgs/msg/ColorRGBA@gz.msgs.Color',
+                '/model/turtle9/LED_color@std_msgs/msg/ColorRGBA@gz.msgs.Color',
+                '/model/turtle10/LED_color@std_msgs/msg/ColorRGBA@gz.msgs.Color',                 
             ],
         ),
         # Launch firefly nodes
