@@ -24,7 +24,7 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 static const int ACTIVATION_THRESHOLD = 1500;
-static const int ACTIVATION_EPSILON = 250;
+static const int ACTIVATION_EPSILON = 1250;
 static const int ACTIVATION_TIME_INCR = 5;
 static const auto FLASH_DURATION = std::chrono::duration_cast<std::chrono::nanoseconds>(1.5s);
 static const float SAFE_DISTANCE = 0.5;
@@ -41,8 +41,6 @@ class FireFly : public rclcpp::Node
       this->model_name = "/" + this->get_parameter("model_name").as_string();
       std::srand(std::time(nullptr) + model_name[model_name.size()-1]);
 
-/*       this->publisher_timer = this->create_wall_timer(
-        50ms, std::bind(&FireFly::publish_callback, this)); */
       // this denotes the initial activation - which every firefly should differ in
       this->activation = (double(rand()))/double(RAND_MAX) * 1000; 
 
@@ -122,23 +120,13 @@ class FireFly : public rclcpp::Node
           motion.linear.x = 0;
           motion.angular.z = 3.14;
         } else {
-          motion.linear.x = 3;
+          motion.linear.x = 2;
           motion.angular.z = 0;
         }
         this->turn_angle = turn_angle;
 
         geometry_pub->publish(motion);
         
-      }
-
-      void publish_callback() // Consumer
-      { 
-        /* geometry_msgs::msg::Twist msg;
-        msg.linear.x = 2;
-        msg.linear.y = 0;
-        msg.angular.z = this->turn_angle; // We don't care about stale data here!
-
-        geometry_pub->publish(msg); */
       }
 
       void activation_buildup()
@@ -162,10 +150,14 @@ class FireFly : public rclcpp::Node
       }
       void flash()
       {
+        if (!flash_lock.try_lock()) return; // We are already flashing
+
         RCLCPP_INFO(this->get_logger(), "Lo! Robot %s is flashing!", model_name.c_str());
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED ON        
         rclcpp::sleep_for(FLASH_DURATION);
         this->flash_pub->publish(std_msgs::msg::Empty()); // LED OFF
+
+        flash_lock.unlock();
       }
       
       void camera1_callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
@@ -274,6 +266,7 @@ class FireFly : public rclcpp::Node
       unsigned int cam2_prev_flashes;
       int activation;
       std::mutex activation_lock;
+      std::mutex flash_lock;
       float turn_angle;
       size_t count_;
 };
